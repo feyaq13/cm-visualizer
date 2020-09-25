@@ -1,0 +1,12 @@
+.button {
+  cursor: pointer;
+
+  &:active {
+    transition: all 100ms ease-in-out;
+    fill: darkgrey;
+    transform-box: fill-box;
+    transform-origin: center;
+    transform: scale(.95);
+    box-shadow: 0 50px rgba(17, 0, 0, 0);
+  }
+}
