@@ -9,18 +9,21 @@ export class CoffeeMachine {
     this._typesOfCoffee = ['cappuccino', ' raf', ' dark coffee'];
     this._isAvailableGrain = 100;
     this._isAvailableWater = 100;
+    this._isAvailableMilk = 100;
     this._init();
   }
 
   _init() {
-    console.log(`
+      console.log(`
     Добро пожаловать!
     Ознакомьтесь, пожалуйста, с нашим меню:
     ${this._typesOfCoffee}
     Для выбора напитка просто напишите его название.
     Приятного аппетита!
     `);
-    this._machineInterface._setupEventClick()
+
+      this._machineInterface.setupEventClick()
+      this._machineInterface.addEventListenerClick(this.makeCoffee.bind(this))
   }
 
   clean() {
@@ -39,6 +42,16 @@ export class CoffeeMachine {
       return false;
     }
 
+    if (this._isAvailableMilk <= 0) {
+      console.log(
+    `
+    уровень молока ниже необходимого: ${this._isAvailableMilk},
+    долейте молока
+    `
+      );
+      return false;
+    }
+
     return true;
   }
 
@@ -53,7 +66,7 @@ export class CoffeeMachine {
         }
 
         if (!this._checkContentsForMakingCoffee()) {
-          reject();
+          reject(new Error('добавьте недостающее в кофе-машину!'));
           return false;
         }
 
@@ -63,26 +76,49 @@ export class CoffeeMachine {
     });
   }
 
-  makeCoffee(typeOfCoffee, grainType) {
-    this._prepare().then(() => {
+  async makeCoffee(typeOfCoffee, grainType) {
 
-      if (this._grainType === 'whole grains' && !this._hasCoffeeMill) {
-        this._grindGrain();
-      }
+    this._prepare()
+    .then(() => {
 
-      this._isClean = false;
+        if (this._grainType === 'whole grains' && !this._hasCoffeeMill) {
+          this._grindGrain();
+        }
 
-      setTimeout(() => console.log('завариваю ☕️...'), 2000);
+        this._isClean = false;
 
-    });
+    })
+    .then((this._whipMilk.bind(this)))
+    .then((this._brewingCoffee.bind(this)))
+    .catch((err) => console.error(err))
+    .finally( () => setTimeout(this._init.bind(this), 500))
+  }
+
+  _brewingCoffee() {
+    return new Promise((resolve) => {
+      this._delay(() => {
+        console.log('завариваю кофе...')
+        resolve(console.log('кофе готов!'))
+      }, 2000)
+    })
+  }
+
+  _delay(cb, ms) {
+    setTimeout(cb, ms)
   }
 
   _whipMilk() {
-    setTimeout(() => {
-      if (this._hasCappuccinoMaker) {
-        console.log('взбиваю 🥛...');
-      }
-    }, 1000);
+    return new Promise((resolve, reject) => {
+      this._delay(() => {
+          if (this._hasCappuccinoMaker && this._isAvailableMilk > 0) {
+            this._isAvailableMilk -= 20;
+            console.log('взбиваю 🥛...');
+            resolve(console.log(`осталось ${this._isAvailableMilk}`))
+          } else {
+            reject(console.log('кажется нет молока'))
+          }
+        }, 1500)
+    })
   }
 
   _grindGrain() {
@@ -92,3 +128,67 @@ export class CoffeeMachine {
     return true;
   }
 }
+
+//   const fetchMachine = Machine({
+//     id: 'coffee-machine',
+//     initial: 'idle',
+//     context: {
+//       pickedCoffeeType: null
+//     },
+//     states: {
+//       idle: {
+//         on: {
+//           MAKE_COFFEE: 'checking'
+//         }
+//       },
+//       checking: {
+//         on: {
+//           RESOLVE: 'picking',
+//           REJECT: 'broken'
+//         }
+//       },
+//       picking: {
+//         on: {
+//           latte: {
+//             target: 'whip_milk',
+//             actions: ['savePickedCoffeeType']
+//           },
+//           cappuccino: {
+//             target: 'whip_milk',
+//             actions: ['savePickedCoffeeType']
+//           },
+//           espresso: {
+//             target: 'grind',
+//             actions: ['savePickedCoffeeType']
+//           },
+//         }
+//       },
+//       broken: {
+//         type: 'final'
+//       },
+//       whip_milk: {
+//         on: {
+//           WHIPPED_MILK: 'grind'
+//         }
+//       },
+//       grind: {
+//         on: {
+//           GRINDED: 'pouring'
+//         }
+//       },
+//       pouring: {
+//         on: {
+//           POURED: {
+//             target: 'idle',
+//             actions: () => alert('enjoy your coffee')
+//           }
+//         }
+//       }
+//     }
+//   }, {
+//     actions: {
+//       savePickedCoffeeType: (context, event) => {
+//         context.pickedCoffeeType = event.type;
+//       }
+//     }
+//   });
