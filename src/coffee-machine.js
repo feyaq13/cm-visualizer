@@ -23,10 +23,10 @@ export class CoffeeMachine {
     Приятного аппетита!
     `);
 
-      this._machineInterface.setupEventClick()
-      this._machineInterface.addEventListenerClick(this.makeCoffee.bind(this))
+      this._machineInterface.setupPlaySoundOnEventClick()
+      this._machineInterface.setupOnSwitchOnEventClick(this.makeCoffee.bind(this))
       this._machineInterface.showTypesCoffee(this.typesOfCoffee)
-      this._machineInterface.addEventClickOnCleanWaste(this.clean.bind(this))
+      this._machineInterface.setupOnCleanWasteOnEventClick(this.clean.bind(this))
   }
 
   clean() {

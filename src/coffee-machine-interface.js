@@ -4,10 +4,10 @@ export class CoffeeMachineInterface {
   constructor(imageSource) {
     this._soundClickButtons = new Audio(audioURL);
     this._buttonElements = document.getElementsByClassName('button');
-    this._makeCoffeeButton =  Array.prototype.filter.call(this._buttonElements, (button => button.classList.contains('make-coffee')))[0]
+    this._switchOnButton =  Array.prototype.filter.call(this._buttonElements, (button => button.classList.contains('button_is-switch-on')))[0]
   }
 
-  addEventClickOnCleanWaste(cb) {
+  setupOnCleanWasteOnEventClick(cb) {
     document.getElementsByClassName('button-clean-waste')[0].addEventListener('click', cb)
   }
 
@@ -19,12 +19,12 @@ export class CoffeeMachineInterface {
     }
   }
 
-  setupEventClick() {
+  setupPlaySoundOnEventClick() {
     Array.prototype.forEach.call(this._buttonElements, (button => button.addEventListener('click', this._playSoundClickButtons.bind(this))))
   }
 
-  addEventListenerClick(cb) {
-    this._makeCoffeeButton.addEventListener('click', cb, {once: true})
+  setupOnSwitchOnEventClick(cb) {
+    this._switchOnButton.addEventListener('click', cb, {once: true})
   }
 
   showTypesCoffee(coffee) {
