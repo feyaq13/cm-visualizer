@@ -20,12 +20,12 @@ export class CoffeeMachineInterface {
   }
 
   onPending() {
-    this._switchOnButton.classList.add('flicker')
+    this._switchOnButton.classList.add('pending-mode')
   }
 
   stopPending() {
     this._switchOnButton.setAttribute('aria-checked', "true")
-    this._switchOnButton.classList.remove('flicker')
+    this._switchOnButton.classList.remove('pending-mode')
   }
 
   setupPlaySoundOnEventClick() {
