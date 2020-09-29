@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" type="text/css" href="./styles.scss">
-    <title>Title</title>
+    <title>Кофе-машина</title>
 </head>
 <body>
 <main>
-  <div class="coffee-machine">
+  <h1 hidden aria-hidden="false" title="Кофе-машина"></h1>
+  <div class="coffee-machine" title="coffee-machine">
     <aside class="coffee-machine__info">
        <nav>
         <h2>Навигация</h2>
@@ -24,21 +25,23 @@
         <li class="coffee-machine__amount-grain"></li>
       </ul>
     </aside>
-    <svg style="position: relative;" class="coffee-machine-design" enable-background="new 0 0 64 64" height="512" viewBox="0 0 64 64" width="512" xmlns="http://www.w3.org/2000/svg"><path d="m8 22.01h48v30.99h-48z" fill="#434a54"/><path d="m29.002 37.005c-.553 0-1-.447-1-1v-3.001c0-.553.447-1 1-1s1 .447 1 1v3.001c0 .553-.447 1-1 1z" fill="#aab2bd"/>
+    <svg role="application" style="position: relative;" class="coffee-machine-design" enable-background="new 0 0 64 64" height="512" viewBox="0 0 64 64" width="512" xmlns="http://www.w3.org/2000/svg"><path d="m8 22.01h48v30.99h-48z" fill="#434a54"/><path d="m29.002 37.005c-.553 0-1-.447-1-1v-3.001c0-.553.447-1 1-1s1 .447 1 1v3.001c0 .553-.447 1-1 1z" fill="#aab2bd"/>
       <path d="m35.001 37.005c-.553 0-1-.447-1-1v-3.001c0-.553.447-1 1-1s1 .447 1 1v3.001c0 .553-.447 1-1 1z" fill="#aab2bd"/><path d="m38 23.999c.55 0 1 .45 1 1v8.011c0 .55-.45 1-1 1h-2c-.55 0-1.45 0-2 0h-4c-.55 0-1.45 0-2 0h-2c-.55 0-1-.45-1-1v-8.011c0-.55.45-1 1-1z" fill="#ccd1d9"/><path d="m29.99 1c.55 0 1 .45 1 1v3.001c0 .55-.45 1-1 1h-20.99c-.55 0-1-.45-1-1v-3.001c0-.55.45-1 1-1z" fill="#656d78"/><path d="m55 1c.55 0 1 .45 1 1v3.001c0 .55-.45 1-1 1h-20.01c-.55 0-1-.45-1-1v-3.001c0-.55.45-1 1-1z" fill="#656d78"/>
 
       <path d="m30.99 4v5.01h-5.99-17v-5.01z" fill="oldlace"/>
       <path class="milk" style="clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%);" d="m30.99 4v5.01h-5.99-17v-5.01z" fill="#e6e9ed"/>
 
       <path d="m17 28.999c.55 0 1 .45 1 1v9.001c0 .55-.45 1-1 1h-1c-.55 0-1-.45-1-1v-9.001c0-.55.45-1 1-1z" fill="#ccd1d9"/><path d="m25 9.01v13h-7-3-7c-1.1 0-2-.899-2-2v-9c0-1.1.9-2 2-2zm-5 6.49c0-.82-.67-1.5-1.5-1.5s-1.5.68-1.5 1.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5zm-6 0c0-.82-.67-1.5-1.5-1.5s-1.5.68-1.5 1.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5z" fill="#545c66"/>
-      <path class="button button_is-switch-on" data-is-switch-on="false" d="m18.5 14c.83 0 1.5.68 1.5 1.5 0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5c0-.82.67-1.5 1.5-1.5z" fill="#aab2bd"/><path d="m15 27h3v4h-3z" fill="#656d78"/><path d="m15 22.01h3v4.99h-3z" fill="#ccd1d9"/>
-      <path class="button" d="m12.5 14c.83 0 1.5.68 1.5 1.5 0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5c0-.82.67-1.5 1.5-1.5z" fill="#aab2bd"/>
+      <path role="button" class="button button_is-switch-on" id="button_is-switch-on" data-is-switch-on="false" d="m18.5 14c.83 0 1.5.68 1.5 1.5 0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5c0-.82.67-1.5 1.5-1.5z" fill="#aab2bd"/>
+      <path d="m15 27h3v4h-3z" fill="#656d78"/><path d="m15 22.01h3v4.99h-3z" fill="#ccd1d9"/>
+
+      <path role="button" class="button" d="m12.5 14c.83 0 1.5.68 1.5 1.5 0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5c0-.82.67-1.5 1.5-1.5z" fill="#aab2bd"/>
 
       <path d="m56 4v5.01h-17-5.01v-5.01z" fill="oldlace"></path>
       <path class="grain" style="clip-path: polygon(0 10%, 100% 10%, 100% 100%, 0 100%);" d="m56 4v5.01h-17-5.01v-5.01z" fill="#965353"/>
 
-      <path class="button" d="m51.5 14c.83 0 1.5.68 1.5 1.5 0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5c0-.82.67-1.5 1.5-1.5z" fill="#aab2bd"/>
-      <path class="button" d="m45.5 14c.83 0 1.5.68 1.5 1.5 0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5c0-.82.67-1.5 1.5-1.5z" fill="#aab2bd"/><path d="m56 9.01c1.1 0 2 .9 2 2v9c0 1.101-.9 2-2 2h-17v-13zm-3 6.49c0-.82-.67-1.5-1.5-1.5s-1.5.68-1.5 1.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5zm-6 0c0-.82-.67-1.5-1.5-1.5s-1.5.68-1.5 1.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5z" fill="#545c66"/>
+      <path role="button" class="button" d="m51.5 14c.83 0 1.5.68 1.5 1.5 0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5c0-.82.67-1.5 1.5-1.5z" fill="#aab2bd"/>
+      <path role="button" class="button" d="m45.5 14c.83 0 1.5.68 1.5 1.5 0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5c0-.82.67-1.5 1.5-1.5z" fill="#aab2bd"/><path d="m56 9.01c1.1 0 2 .9 2 2v9c0 1.101-.9 2-2 2h-17v-13zm-3 6.49c0-.82-.67-1.5-1.5-1.5s-1.5.68-1.5 1.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5zm-6 0c0-.82-.67-1.5-1.5-1.5s-1.5.68-1.5 1.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5z" fill="#545c66"/>
 
       <path d="m28 12h8v5.01h-8z" fill="oldlace"/>
       <path class="water" style="clip-path: polygon(0 6%, 100% 6%, 100% 100%, 0 100%);" d="m28 12h8v5.01h-8z" fill="#5d9cec"/>
