@@ -6,7 +6,8 @@ export class CoffeeMachine {
     this._isClean = true;
     this._isBroken = false;
     this._grainType = ['ground', 'whole grains'];
-    this._typesOfCoffee = ['cappuccino', ' raf', ' dark coffee'];
+    this.typesOfCoffee = ['cappuccino', ' raf', ' dark coffee'];
+    this._amountWaste = 0;
     this._isAvailableGrain = 100;
     this._isAvailableWater = 100;
     this._isAvailableMilk = 100;
@@ -17,16 +18,23 @@ export class CoffeeMachine {
       console.log(`
     Добро пожаловать!
     Ознакомьтесь, пожалуйста, с нашим меню:
-    ${this._typesOfCoffee}
+    ${this.typesOfCoffee}
     Для выбора напитка просто напишите его название.
     Приятного аппетита!
     `);
 
       this._machineInterface.setupEventClick()
       this._machineInterface.addEventListenerClick(this.makeCoffee.bind(this))
+      this._machineInterface.showTypesCoffee(this.typesOfCoffee)
+      this._machineInterface.addEventClickOnCleanWaste(this.clean.bind(this))
   }
 
   clean() {
+    if (this._amountWaste >= 50 && this._amountWaste <= 100) {
+      this._amountWaste = 0
+      console.log('очистил 🧹')
+    }
+
     this._isClean = true;
     return true;
   }
@@ -85,6 +93,10 @@ export class CoffeeMachine {
           this._grindGrain();
         }
 
+        this._isAvailableGrain -= 20;
+        this._isAvailableWater -= 20;
+        this._amountWaste += 20;
+
         this._isClean = false;
 
     })
@@ -122,7 +134,6 @@ export class CoffeeMachine {
   }
 
   _grindGrain() {
-    this._isAvailableGrain -= 20;
     console.log('измельчаю! 😊');
 
     return true;

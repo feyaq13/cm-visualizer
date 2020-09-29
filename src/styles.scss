@@ -9,6 +9,14 @@ main {
   align-content: center;
 }
 
+nav ul {
+  list-style-type: none;
+}
+
+.coffee-machine {
+  display: flex;
+}
+
 svg {
   max-width: 400px;
   margin: auto;
