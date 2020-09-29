@@ -24,7 +24,7 @@ export class CoffeeMachineInterface {
   }
 
   stopPending() {
-    this._switchOnButton.dataset.isSwitchOn = 'true'
+    this._switchOnButton.setAttribute('aria-checked', "true")
     this._switchOnButton.classList.remove('flicker')
   }
 

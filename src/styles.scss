@@ -39,7 +39,7 @@ svg {
 }
 
 .button_is-switch-on {
-  &[data-is-switch-on='true'] {
+  &[aria-checked='true'] {
     fill: $make-coffee-mode;
   }
 }
