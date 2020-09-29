@@ -19,6 +19,15 @@ export class CoffeeMachineInterface {
     }
   }
 
+  onPending() {
+    this._switchOnButton.classList.add('flicker')
+  }
+
+  stopPending() {
+    this._switchOnButton.dataset.isSwitchOn = 'true'
+    this._switchOnButton.classList.remove('flicker')
+  }
+
   setupPlaySoundOnEventClick() {
     Array.prototype.forEach.call(this._buttonElements, (button => button.addEventListener('click', this._playSoundClickButtons.bind(this))))
   }

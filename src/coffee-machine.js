@@ -65,23 +65,26 @@ export class CoffeeMachine {
 
   _prepare() {
     console.log('проверяю...');
+      return new Promise((resolve, reject) => {
 
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        if (!this._isClean && !this._isBroken) {
-          console.log('очищаю...');
-          this.clean();
-        }
+        this._machineInterface.onPending()
 
-        if (!this._checkContentsForMakingCoffee()) {
-          reject(new Error('добавьте недостающее в кофе-машину!'));
-          return false;
-        }
+        setTimeout(() => {
+          if (!this._isClean && !this._isBroken) {
+            console.log('очищаю...');
+            this.clean();
+          }
 
-        resolve(console.log('я готова делать кофе!'));
+          if (!this._checkContentsForMakingCoffee()) {
+            reject(new Error('добавьте недостающее в кофе-машину!'));
+            return false;
+          }
 
-      }, 3000);
-    });
+          resolve(console.log('я готова делать кофе!'));
+          this._machineInterface.stopPending()
+
+        }, 5000);
+      });
   }
 
   async makeCoffee(typeOfCoffee, grainType) {

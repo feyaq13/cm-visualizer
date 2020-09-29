@@ -1,3 +1,6 @@
+$make-coffee-mode: green;
+$cappuccino-maker-color: red;
+
 html, body, main {
   height: 100%;
 }
@@ -32,5 +35,33 @@ svg {
     transform-origin: center;
     transform: scale(.95);
     box-shadow: 0 50px rgba(17, 0, 0, 0);
+  }
+}
+
+.button_is-switch-on {
+  &[data-is-switch-on='true'] {
+    fill: $make-coffee-mode;
+  }
+}
+
+.button-cappuccino-maker {
+  fill: $cappuccino-maker-color;
+}
+
+.flicker {
+  animation: flicker 1s infinite;
+}
+
+@keyframes flicker {
+  0% {
+    fill: $make-coffee-mode;
+  }
+
+  50% {
+    fill: #aab2bd;
+  }
+
+  100% {
+    fill: $make-coffee-mode;
   }
 }
