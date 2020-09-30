@@ -1,11 +1,11 @@
 export class CoffeeMachine {
-  constructor(machineInterface, hasCappuccinoMaker, hasCoffeeMill /*...*/) {
+  constructor(machineInterface, hasCappuccinoMaker, hasCoffeeMill) {
     this._hasCappuccinoMaker = hasCappuccinoMaker;
-    this._hasCoffeeMill = hasCoffeeMill;
+    // this._hasCoffeeMill = hasCoffeeMill;
     this._machineInterface = machineInterface;
     this._isClean = true;
     this._isBroken = false;
-    this._grainType = ['ground', 'whole grains'];
+    // this._grainType = ['ground', 'whole grains'];
     this.typesOfCoffee = ['cappuccino', ' raf', ' dark coffee'];
     this._amountWaste = 0;
     this._isAvailableGrain = 100;
@@ -24,7 +24,7 @@ export class CoffeeMachine {
     `);
 
       this._machineInterface.setupPlaySoundOnEventClick()
-      this._machineInterface.setupOnSwitchOnEventClick(this.makeCoffee.bind(this))
+      this._machineInterface.setupOnSwitchOnEventClick(this.turnOn.bind(this))
       this._machineInterface.showTypesCoffee(this.typesOfCoffee)
       this._machineInterface.setupOnCleanWasteOnEventClick(this.clean.bind(this))
   }
@@ -87,26 +87,23 @@ export class CoffeeMachine {
       });
   }
 
-  async makeCoffee(typeOfCoffee, grainType) {
-
+  turnOn() {
     this._prepare()
-    .then(() => {
+    .then(this._machineInterface.setupOnMakeCoffeeTypesOnEventClick.bind(this._machineInterface, (typeOfCoffee => typeOfCoffee)))
+    .then((selectTypeOfCoffee) => this._makeCoffee(selectTypeOfCoffee))
+  }
 
-        if (this._grainType === 'whole grains' && !this._hasCoffeeMill) {
-          this._grindGrain();
-        }
-
+  _makeCoffee(typeOfCoffee) {
+    return new Promise((resolve) => {
+      this._delay(() => {
+        console.log(`завариваю ${typeOfCoffee}`)
         this._isAvailableGrain -= 20;
-        this._isAvailableWater -= 20;
+        this._isAvailableWater -= 10;
         this._amountWaste += 20;
-
-        this._isClean = false;
-
+        resolve(console.log(`${typeOfCoffee} готов!`))
+        this._machineInterface.stopPending()
+      }, 3500)
     })
-    .then((this._whipMilk.bind(this)))
-    .then((this._brewingCoffee.bind(this)))
-    .catch((err) => console.error(err))
-    .finally( () => setTimeout(this._init.bind(this), 500))
   }
 
   _brewingCoffee() {

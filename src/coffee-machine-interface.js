@@ -5,6 +5,18 @@ export class CoffeeMachineInterface {
     this._soundClickButtons = new Audio(audioURL);
     this._buttonElements = document.getElementsByClassName('button');
     this._switchOnButton =  Array.prototype.filter.call(this._buttonElements, (button => button.classList.contains('button_is-switch-on')))[0]
+    this._buttonElementsNav = document.getElementsByClassName('coffee-list')[0].getElementsByTagName('button');
+  }
+
+  async setupOnMakeCoffeeTypesOnEventClick() {
+    return new Promise((resolve => {
+      Array.prototype.forEach.call(this._buttonElementsNav, (button) => button.addEventListener('click', this._getTypeCoffee.bind(this, typeOfCoffee => resolve(typeOfCoffee))))
+    }))
+  }
+
+  _getTypeCoffee(cb, e) {
+    this.onPending()
+    return cb(e.target.textContent)
   }
 
   setupOnCleanWasteOnEventClick(cb) {
