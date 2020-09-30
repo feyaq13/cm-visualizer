@@ -95,24 +95,39 @@ export class CoffeeMachine {
 
   _makeCoffee(typeOfCoffee) {
     return new Promise((resolve) => {
-      this._delay(() => {
         console.log(`завариваю ${typeOfCoffee}`)
-        this._isAvailableGrain -= 20;
-        this._isAvailableWater -= 10;
-        this._amountWaste += 20;
-        resolve(console.log(`${typeOfCoffee} готов!`))
-        this._machineInterface.stopPending()
-      }, 3500)
+        resolve(this._brewingCoffee(typeOfCoffee, 4000))
     })
   }
 
-  _brewingCoffee() {
+  _brewingCoffee(typeOfCoffee, ms) {
     return new Promise((resolve) => {
       this._delay(() => {
-        console.log('завариваю кофе...')
-        resolve(console.log('кофе готов!'))
-      }, 2000)
+
+        this._consumeIngredients()
+
+        if (typeOfCoffee === 'cappuccino' || typeOfCoffee === ' raf') {
+          this._whipMilk()
+          .then(() => this._madeCoffee())
+        } else {
+          this._madeCoffee()
+        }
+
+      }, ms)
     })
+  }
+
+  _consumeIngredients() {
+    this._isAvailableGrain -= 20;
+    this._isAvailableWater -= 10;
+    this._amountWaste += 20;
+  }
+
+  _madeCoffee() {
+    this._delay(() => {
+      console.log('кофе готов!')
+      this._machineInterface.stopPending()
+    }, 10000)
   }
 
   _delay(cb, ms) {
@@ -124,12 +139,11 @@ export class CoffeeMachine {
       this._delay(() => {
           if (this._hasCappuccinoMaker && this._isAvailableMilk > 0) {
             this._isAvailableMilk -= 20;
-            console.log('взбиваю 🥛...');
-            resolve(console.log(`осталось ${this._isAvailableMilk}`))
+            resolve(console.log('взбиваю 🥛...'))
           } else {
             reject(console.log('кажется нет молока'))
           }
-        }, 1500)
+        }, 2000)
     })
   }
 
