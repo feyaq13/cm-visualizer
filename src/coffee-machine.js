@@ -6,7 +6,7 @@ export class CoffeeMachine {
     this._isClean = true;
     this._isBroken = false;
     // this._grainType = ['ground', 'whole grains'];
-    this.typesOfCoffee = ['cappuccino', ' raf', ' dark coffee'];
+    this.typesOfCoffee = ['cappuccino', 'raf', 'dark coffee'];
     this._amountWaste = 0;
     this._isAvailableGrain = 100;
     this._isAvailableWater = 100;
@@ -18,7 +18,7 @@ export class CoffeeMachine {
       console.log(`
     Добро пожаловать!
     Ознакомьтесь, пожалуйста, с нашим меню:
-    ${this.typesOfCoffee}
+    ${this.typesOfCoffee.join(', ')}
     Для выбора напитка просто напишите его название.
     Приятного аппетита!
     `);
@@ -67,9 +67,9 @@ export class CoffeeMachine {
     console.log('проверяю...');
       return new Promise((resolve, reject) => {
 
-        this._machineInterface.onPending()
+        this._machineInterface.onPendingAnimation()
 
-        setTimeout(() => {
+        this._delay(() => {
           if (!this._isClean && !this._isBroken) {
             console.log('очищаю...');
             this.clean();
@@ -81,7 +81,7 @@ export class CoffeeMachine {
           }
 
           resolve(console.log('я готова делать кофе!'));
-          this._machineInterface.stopPending()
+          this._machineInterface.stopPendingAnimation()
 
         }, 5000);
       });
@@ -95,38 +95,49 @@ export class CoffeeMachine {
 
   _makeCoffee(typeOfCoffee) {
     return new Promise((resolve) => {
-        console.log(`завариваю ${typeOfCoffee}`)
-        resolve(this._brewingCoffee(typeOfCoffee, 4000))
+      console.log(`завариваю ${typeOfCoffee}`)
+      resolve(this._brewingCoffee(typeOfCoffee, 4000))
     })
   }
 
   _brewingCoffee(typeOfCoffee, ms) {
-    return new Promise((resolve) => {
-      this._delay(() => {
+    this._delay(() => {
 
-        this._consumeIngredients()
+      this._consumeIngredients(typeOfCoffee)
 
-        if (typeOfCoffee === 'cappuccino' || typeOfCoffee === ' raf') {
-          this._whipMilk()
-          .then(() => this._madeCoffee())
-        } else {
-          this._madeCoffee()
-        }
+      if (typeOfCoffee === 'cappuccino' || typeOfCoffee === ' raf') {
+        this._whipMilk()
+        .then(() => this._madeCoffee())
+      } else {
+        this._madeCoffee()
+      }
 
-      }, ms)
-    })
+    }, ms)
   }
 
-  _consumeIngredients() {
-    this._isAvailableGrain -= 20;
-    this._isAvailableWater -= 10;
-    this._amountWaste += 20;
+  _consumeIngredients(typeOfCoffee) {
+    switch (typeOfCoffee) {
+      case 'cappuccino':
+      case 'raf':
+        this._isAvailableMilk -= 20;
+        this._isAvailableGrain -= 20;
+        this._isAvailableWater -= 10;
+        this._amountWaste += 20;
+        break;
+      case 'dark coffee':
+        this._isAvailableGrain -= 20;
+        this._isAvailableWater -= 10;
+        this._amountWaste += 20;
+        break
+    }
   }
 
   _madeCoffee() {
+    this._machineInterface.onPouringDrinkAnimation(4)
+
     this._delay(() => {
       console.log('кофе готов!')
-      this._machineInterface.stopPending()
+      this._machineInterface.stopPendingAnimation()
     }, 10000)
   }
 
@@ -137,19 +148,18 @@ export class CoffeeMachine {
   _whipMilk() {
     return new Promise((resolve, reject) => {
       this._delay(() => {
-          if (this._hasCappuccinoMaker && this._isAvailableMilk > 0) {
-            this._isAvailableMilk -= 20;
-            resolve(console.log('взбиваю 🥛...'))
-          } else {
-            reject(console.log('кажется нет молока'))
-          }
-        }, 2000)
+        if (this._hasCappuccinoMaker && this._isAvailableMilk > 0) {
+          this._isAvailableMilk -= 20;
+          resolve(console.log('взбиваю 🥛...'))
+        } else {
+          reject(console.log('кажется нет молока'))
+        }
+      }, 2000)
     })
   }
 
   _grindGrain() {
     console.log('измельчаю! 😊');
-
     return true;
   }
 }

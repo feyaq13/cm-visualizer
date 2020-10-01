@@ -15,7 +15,7 @@ export class CoffeeMachineInterface {
   }
 
   _getTypeCoffee(cb, e) {
-    this.onPending()
+    this.onPendingAnimation()
     return cb(e.target.textContent)
   }
 
@@ -31,7 +31,7 @@ export class CoffeeMachineInterface {
     }
   }
 
-  onPending() {
+  onPendingAnimation() {
     this._switchOnButton.classList.add('pending-mode')
   }
 
