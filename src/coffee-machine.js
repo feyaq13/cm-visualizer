@@ -119,9 +119,9 @@ export class CoffeeMachine {
 
       if (typeOfCoffee.withMilk) {
         this._whipMilk()
-        .then(() => this._madeCoffee(typeOfCoffee.color))
+        .then(() => this._pouringCoffee(typeOfCoffee.color))
       } else {
-        this._madeCoffee(typeOfCoffee.color)
+        this._pouringCoffee(typeOfCoffee.color)
       }
 
     }, ms)
@@ -144,7 +144,7 @@ export class CoffeeMachine {
     }
   }
 
-  _madeCoffee(colorCoffee) {
+  _pouringCoffee(colorCoffee) {
     this._machineInterface.onPouringDrinkAnimation(4, colorCoffee)
 
     this._delay(() => {
