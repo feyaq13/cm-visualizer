@@ -7,6 +7,11 @@ export class CoffeeMachine {
     this._isBroken = false;
     // this._grainType = ['ground', 'whole grains'];
     this.typesOfCoffee = ['cappuccino', 'raf', 'dark coffee'];
+    this.recipes = [
+      {coffeeName: 'cappuccino', color: 'rosybrown', withMilk: true},
+      {coffeeName: 'raf', color: 'brown',  withMilk: true},
+      {coffeeName: 'dark coffee', color: '#392919',  withMilk: false},
+    ];
     this._amountWaste = 0;
     this._isAvailableGrain = 100;
     this._isAvailableWater = 100;
@@ -27,6 +32,10 @@ export class CoffeeMachine {
       this._machineInterface.setupOnSwitchOnEventClick(this.turnOn.bind(this))
       this._machineInterface.showTypesCoffee(this.typesOfCoffee)
       this._machineInterface.setupOnCleanWasteOnEventClick(this.clean.bind(this))
+  }
+
+  searchTargetRecipe(typeOfCoffee) {
+    return this.recipes.filter(recipe => recipe.coffeeName === typeOfCoffee)
   }
 
   clean() {
@@ -89,13 +98,16 @@ export class CoffeeMachine {
 
   turnOn() {
     this._prepare()
-    .then(this._machineInterface.setupOnMakeCoffeeTypesOnEventClick.bind(this._machineInterface, (typeOfCoffee => typeOfCoffee)))
-    .then((selectTypeOfCoffee) => this._makeCoffee(selectTypeOfCoffee))
+    .then(() => this._machineInterface.setupOnMakeCoffeeTypesOnEventClick((typeOfCoffee => typeOfCoffee)))
+    .then((selectTypeOfCoffee) => {
+      selectTypeOfCoffee = this.searchTargetRecipe(selectTypeOfCoffee)[0];
+      return this._makeCoffee(selectTypeOfCoffee)
+    })
   }
 
   _makeCoffee(typeOfCoffee) {
     return new Promise((resolve) => {
-      console.log(`завариваю ${typeOfCoffee}`)
+      console.log(`завариваю ${typeOfCoffee.coffeeName}`)
       resolve(this._brewingCoffee(typeOfCoffee, 4000))
     })
   }
@@ -103,13 +115,13 @@ export class CoffeeMachine {
   _brewingCoffee(typeOfCoffee, ms) {
     this._delay(() => {
 
-      this._consumeIngredients(typeOfCoffee)
+      this._consumeIngredients(typeOfCoffee.coffeeName)
 
-      if (typeOfCoffee === 'cappuccino' || typeOfCoffee === ' raf') {
+      if (typeOfCoffee.withMilk) {
         this._whipMilk()
-        .then(() => this._madeCoffee())
+        .then(() => this._madeCoffee(typeOfCoffee.color))
       } else {
-        this._madeCoffee()
+        this._madeCoffee(typeOfCoffee.color)
       }
 
     }, ms)
@@ -132,8 +144,8 @@ export class CoffeeMachine {
     }
   }
 
-  _madeCoffee() {
-    this._machineInterface.onPouringDrinkAnimation(4)
+  _madeCoffee(colorCoffee) {
+    this._machineInterface.onPouringDrinkAnimation(4, colorCoffee)
 
     this._delay(() => {
       console.log('кофе готов!')

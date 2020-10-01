@@ -36,7 +36,8 @@ export class CoffeeMachineInterface {
     this._switchOnButton.classList.add('pending-mode')
   }
 
-  onPouringDrinkAnimation(ms) {
+  onPouringDrinkAnimation(ms, colorCoffee) {
+    this._cupElement.style.fill = colorCoffee;
     this._cupElement.classList.add('pouring-mode')
     this._cupElement.style.animationDuration = ms;
   }
