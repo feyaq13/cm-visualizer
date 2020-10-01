@@ -52,6 +52,12 @@ svg {
   animation: flicker 1s infinite;
 }
 
+.pouring-mode {
+  animation-name: increaseCoffee;
+  animation-fill-mode: forwards;
+  animation-duration: 5s;
+}
+
 @keyframes flicker {
   0% {
     fill: $make-coffee-mode;
@@ -63,5 +69,16 @@ svg {
 
   100% {
     fill: $make-coffee-mode;
+  }
+}
+
+@keyframes increaseCoffee {
+  $coffee: 120%;
+
+  @for $i from 0% through 100% {
+    #{$i}% {
+      clip-path: polygon(0 $coffee, 100% $coffee, 100% 100%, 0 100%);
+      $coffee: $coffee - 1;
+    }
   }
 }

@@ -6,9 +6,10 @@ export class CoffeeMachineInterface {
     this._buttonElements = document.getElementsByClassName('button');
     this._switchOnButton =  Array.prototype.filter.call(this._buttonElements, (button => button.classList.contains('button_is-switch-on')))[0]
     this._buttonElementsNav = document.getElementsByClassName('coffee-list')[0].getElementsByTagName('button');
+    this._cupElement = document.getElementsByClassName('coffee-cup')[0];
   }
 
-  async setupOnMakeCoffeeTypesOnEventClick() {
+  setupOnMakeCoffeeTypesOnEventClick() {
     return new Promise((resolve => {
       Array.prototype.forEach.call(this._buttonElementsNav, (button) => button.addEventListener('click', this._getTypeCoffee.bind(this, typeOfCoffee => resolve(typeOfCoffee))))
     }))
@@ -35,7 +36,12 @@ export class CoffeeMachineInterface {
     this._switchOnButton.classList.add('pending-mode')
   }
 
-  stopPending() {
+  onPouringDrinkAnimation(ms) {
+    this._cupElement.classList.add('pouring-mode')
+    this._cupElement.style.animationDuration = ms;
+  }
+
+  stopPendingAnimation() {
     this._switchOnButton.setAttribute('aria-checked', "true")
     this._switchOnButton.classList.remove('pending-mode')
   }
