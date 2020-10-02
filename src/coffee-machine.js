@@ -1,48 +1,73 @@
 export class CoffeeMachine {
-  constructor(machineInterface, hasCappuccinoMaker, hasCoffeeMill) {
+  constructor(machineInterface, hasCappuccinoMaker) {
     this._hasCappuccinoMaker = hasCappuccinoMaker;
-    // this._hasCoffeeMill = hasCoffeeMill;
     this._machineInterface = machineInterface;
     this.isOn = false;
     this._isClean = true;
     this._isBroken = false;
-    // this._grainType = ['ground', 'whole grains'];
-    this.typesOfCoffee = ['cappuccino', 'raf', 'dark coffee'];
     this.recipes = [
-      {coffeeName: 'cappuccino', color: '#CFAA8F', withMilk: true},
-      {coffeeName: 'raf', color: '#CFA780',  withMilk: true},
-      {coffeeName: 'dark coffee', color: '#4F240A',  withMilk: false},
+      {
+        coffeeName: 'cappuccino',
+        color: '#CFAA8F',
+        recipe: {
+          withMilk: true,
+          milkRequired: 20,
+          waterRequired: 10,
+          grainRequired: 20,
+        },
+      },
+      {
+        coffeeName: 'raf',
+        color: '#CFA780',
+        recipe: {
+          withMilk: true,
+          milkRequired: 20,
+          waterRequired: 10,
+          grainRequired: 20,
+        },
+      },
+      {
+        coffeeName: 'dark coffee',
+        color: '#4F240A',
+        recipe: {
+          withMilk: false,
+          milkRequired: 0,
+          waterRequired: 10,
+          grainRequired: 20,
+        },
+      },
     ];
-    this._amountWaste = 0;
-    this._isAvailableGrain = 100;
-    this._isAvailableWater = 100;
-    this._isAvailableMilk = 100;
+    this.coffeeTypes = this.recipes.map((r) => r.coffeeName);
+    this._wasteAmount = 0;
+    this._grainAvailable = 100;
+    this._waterAvailable = 100;
+    this._milkAvailable = 100;
     this._init();
   }
 
   _init() {
-      console.log(`
-    Добро пожаловать!
-    Ознакомьтесь, пожалуйста, с нашим меню:
-    ${this.typesOfCoffee.join(', ')}
-    Для выбора напитка просто напишите его название.
-    Приятного аппетита!
+    console.log(`
+      Добро пожаловать!
+      Ознакомьтесь, пожалуйста, с нашим меню:
+      ${this.coffeeTypes.join(', ')}
+      Для выбора напитка просто напишите его название.
+      Приятного аппетита!
     `);
 
-      this._machineInterface.setupPlaySoundOnEventClick()
-      this._machineInterface.setupOnSwitchOnEventClick(this.pendingSelectCoffee.bind(this))
-      this._machineInterface.showTypesCoffee(this.typesOfCoffee)
-      this._machineInterface.setupOnCleanWasteOnEventClick(this.clean.bind(this))
+    this._machineInterface.setupPlaySoundOnEventClick();
+    this._machineInterface.setupOnSwitchOnEventClick(this.pendingSelectCoffee.bind(this));
+    this._machineInterface.showTypesCoffee(this.coffeeTypes);
+    this._machineInterface.setupOnCleanWasteOnEventClick(this.clean.bind(this));
   }
 
-  searchTargetRecipe(typeOfCoffee) {
-    return this.recipes.filter(recipe => recipe.coffeeName === typeOfCoffee)
+  searchTargetRecipe(coffeeType) {
+    return this.recipes.find((recipe) => recipe.coffeeName === coffeeType);
   }
 
   clean() {
-    if (this._amountWaste >= 50 && this._amountWaste <= 100) {
-      this._amountWaste = 0
-      console.log('очистил 🧹')
+    if (this._wasteAmount >= 50 && this._wasteAmount <= 100) {
+      this._wasteAmount = 0;
+      console.log('очистил 🧹');
     }
 
     this._isClean = true;
@@ -50,22 +75,24 @@ export class CoffeeMachine {
   }
 
   _checkContentsForMakingCoffee() {
-    if (this._isAvailableGrain <= 0) {
+    if (this._grainAvailable <= 0) {
       console.log('добавьте кофе');
+
       return false;
     }
 
-    if (this._isAvailableWater <= 0) {
+    if (this._waterAvailable <= 0) {
       console.log('долейте воды');
+
       return false;
     }
 
-    if (this._isAvailableMilk <= 0) {
+    if (this._milkAvailable <= 0) {
       console.log(
-    `
-    уровень молока ниже необходимого: ${this._isAvailableMilk},
+        `
+    уровень молока ниже необходимого: ${this._milkAvailable},
     долейте молока
-    `
+    `,
       );
       return false;
     }
@@ -75,187 +102,111 @@ export class CoffeeMachine {
 
   _prepare(delayMs) {
     console.log('проверяю...');
-      return new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
+      this._machineInterface.onPendingAnimation();
 
-        this._machineInterface.onPendingAnimation()
+      this._delay(delayMs).then(() => {
+        if (!this._isClean && !this._isBroken) {
+          console.log('очищаю...');
+          this.clean();
+        }
 
-        this._delay(() => {
-          if (!this._isClean && !this._isBroken) {
-            console.log('очищаю...');
-            this.clean();
-          }
+        if (!this._checkContentsForMakingCoffee()) {
+          reject(new Error('добавьте недостающее в кофе-машину!'));
+          return false;
+        }
 
-          if (!this._checkContentsForMakingCoffee()) {
-            reject(new Error('добавьте недостающее в кофе-машину!'));
-            return false;
-          }
-
-          resolve(console.log('я готова делать кофе!'));
-          this._machineInterface.stopPendingAnimation()
-
-        }, delayMs);
+        resolve(console.log('я готова делать кофе!'));
+        this._machineInterface.stopPendingAnimation();
       });
+    });
   }
 
-  pendingSelectCoffee(selectTypeOfCoffee) {
+  pendingSelectCoffee(selectedCoffeeType) {
     if (this.isOn) {
       this.afterTurnOn();
-      return this._makeCoffee(this.searchTargetRecipe(selectTypeOfCoffee)[0]).finally(() => this._machineInterface.enabledAllButtons())
+      return this._makeCoffee(this.searchTargetRecipe(selectedCoffeeType)).then(() =>
+        this._machineInterface.enableAllButtons(),
+      );
     } else {
-      this.turnOn()
+      this.turnOn();
     }
   }
 
   turnOn() {
     this.isOn = true;
-    this._prepare(0).then(this.afterTurnOn())
+    this._prepare(0).then(this.afterTurnOn());
   }
 
   afterTurnOn() {
-    return this._machineInterface.setupOnMakeCoffeeTypesOnEventClick((typeOfCoffee => typeOfCoffee))
-    .then((typeOfCoffee) => this.pendingSelectCoffee(typeOfCoffee))
+    return this._machineInterface
+      .setupOnMakeCoffeeTypesOnEventClick((coffeeType) => coffeeType)
+      .then((coffeeType) => this.pendingSelectCoffee(coffeeType));
   }
 
-  _makeCoffee(typeOfCoffee) {
+  _makeCoffee(coffeeType) {
     return new Promise((resolve) => {
-      console.log(`завариваю ${typeOfCoffee.coffeeName}`)
-      resolve(this._brewingCoffee(typeOfCoffee, 4000))
-    })
+      console.log(`завариваю ${coffeeType.coffeeName}`);
+      resolve(this._brewCoffee(coffeeType, 4000));
+    });
   }
 
-  _brewingCoffee(typeOfCoffee, ms) {
+  _brewCoffee(coffeeType, ms) {
     return new Promise((resolve) => {
-      this._delay(() => {
+      this._delay(ms).then(() => {
+        this._consumeIngredients(coffeeType);
 
-        this._consumeIngredients(typeOfCoffee.coffeeName)
-
-        if (typeOfCoffee.withMilk) {
-          resolve(this._whipMilk()
-          .then(
-            () => this._pouringCoffee(typeOfCoffee.color),
-            (err) => console.error(new Error('красная кнопка заглушка!1'), err)
-          ))
+        if (coffeeType.recipe.withMilk) {
+          this._whipMilk()
+            .then(
+              () => this._pourCoffee(coffeeType.color),
+              (err) => console.error(new Error('красная кнопка заглушка!1'), err),
+            )
+            .then(resolve);
         } else {
-          resolve(this._pouringCoffee(typeOfCoffee.color))
+          this._pourCoffee(coffeeType.color).then(resolve);
         }
-
-      }, ms)
-    })
+      });
+    });
   }
 
-  _consumeIngredients(typeOfCoffee) {
-    switch (typeOfCoffee) {
-      case 'cappuccino':
-      case 'raf':
-        this._isAvailableMilk -= 20;
-        this._isAvailableGrain -= 20;
-        this._isAvailableWater -= 10;
-        this._amountWaste += 20;
-        break;
-      case 'dark coffee':
-        this._isAvailableGrain -= 20;
-        this._isAvailableWater -= 10;
-        this._amountWaste += 20;
-        break
-    }
+  _consumeIngredients(coffeeType) {
+    const { waterRequired, grainRequired, milkRequired } = coffeeType.recipe;
+
+    this._milkAvailable -= milkRequired;
+    this._grainAvailable -= grainRequired;
+    this._waterAvailable -= waterRequired;
+    this._wasteAmount += grainRequired;
 
     this._isClean = false;
   }
 
-  _pouringCoffee(colorCoffee) {
-    return new Promise ((resolve) => {
-      this._machineInterface.onPouringDrinkAnimation(4, colorCoffee)
+  _pourCoffee(colorCoffee) {
+    return new Promise((resolve) => {
+      this._machineInterface.onPouringDrinkAnimation(4, colorCoffee);
 
-      this._delay(() => {
-        this._machineInterface.stopPendingAnimation()
-        resolve(console.log('кофе готов!'))
-      }, 10000)
-    })
+      this._delay(10000).then(() => {
+        this._machineInterface.stopPendingAnimation();
+        resolve(console.log('кофе готов!'));
+      });
+    });
   }
 
-  _delay(cb, ms) {
-    setTimeout(cb, ms)
+  _delay(ms) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    });
   }
 
   _whipMilk() {
     return new Promise((resolve, reject) => {
-      this._delay(() => {
-        if (this._hasCappuccinoMaker && this._isAvailableMilk > 0) {
-          this._isAvailableMilk -= 20;
-          resolve(console.log('взбиваю 🥛...'))
+      this._delay(2000).then(() => {
+        if (this._hasCappuccinoMaker && this._milkAvailable > 0) {
+          resolve(console.log('взбиваю 🥛...'));
         } else {
-          reject(console.log('кажется нет молока'))
+          reject(console.log('кажется нет молока'));
         }
-      }, 2000)
-    })
-  }
-
-  _grindGrain() {
-    console.log('измельчаю! 😊');
-    return true;
+      });
+    });
   }
 }
-
-//   const fetchMachine = Machine({
-//     id: 'coffee-machine',
-//     initial: 'idle',
-//     context: {
-//       pickedCoffeeType: null
-//     },
-//     states: {
-//       idle: {
-//         on: {
-//           MAKE_COFFEE: 'checking'
-//         }
-//       },
-//       checking: {
-//         on: {
-//           RESOLVE: 'picking',
-//           REJECT: 'broken'
-//         }
-//       },
-//       picking: {
-//         on: {
-//           latte: {
-//             target: 'whip_milk',
-//             actions: ['savePickedCoffeeType']
-//           },
-//           cappuccino: {
-//             target: 'whip_milk',
-//             actions: ['savePickedCoffeeType']
-//           },
-//           espresso: {
-//             target: 'grind',
-//             actions: ['savePickedCoffeeType']
-//           },
-//         }
-//       },
-//       broken: {
-//         type: 'final'
-//       },
-//       whip_milk: {
-//         on: {
-//           WHIPPED_MILK: 'grind'
-//         }
-//       },
-//       grind: {
-//         on: {
-//           GRINDED: 'pouring'
-//         }
-//       },
-//       pouring: {
-//         on: {
-//           POURED: {
-//             target: 'idle',
-//             actions: () => alert('enjoy your coffee')
-//           }
-//         }
-//       }
-//     }
-//   }, {
-//     actions: {
-//       savePickedCoffeeType: (context, event) => {
-//         context.pickedCoffeeType = event.type;
-//       }
-//     }
-//   });
