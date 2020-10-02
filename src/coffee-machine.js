@@ -30,7 +30,7 @@ export class CoffeeMachine {
     `);
 
       this._machineInterface.setupPlaySoundOnEventClick()
-      this._machineInterface.setupOnSwitchOnEventClick(this.pending.bind(this))
+      this._machineInterface.setupOnSwitchOnEventClick(this.pendingSelectCoffee.bind(this))
       this._machineInterface.showTypesCoffee(this.typesOfCoffee)
       this._machineInterface.setupOnCleanWasteOnEventClick(this.clean.bind(this))
   }
@@ -97,7 +97,7 @@ export class CoffeeMachine {
       });
   }
 
-  pending(selectTypeOfCoffee) {
+  pendingSelectCoffee(selectTypeOfCoffee) {
     if (this.isOn) {
       this.afterTurnOn();
       return this._makeCoffee(this.searchTargetRecipe(selectTypeOfCoffee)[0]).finally(() => this._machineInterface.enabledAllButtons())
@@ -113,7 +113,7 @@ export class CoffeeMachine {
 
   afterTurnOn() {
     return this._machineInterface.setupOnMakeCoffeeTypesOnEventClick((typeOfCoffee => typeOfCoffee))
-    .then((typeOfCoffee) => this.pending(typeOfCoffee))
+    .then((typeOfCoffee) => this.pendingSelectCoffee(typeOfCoffee))
   }
 
   _makeCoffee(typeOfCoffee) {
