@@ -3,14 +3,15 @@ export class CoffeeMachine {
     this._hasCappuccinoMaker = hasCappuccinoMaker;
     // this._hasCoffeeMill = hasCoffeeMill;
     this._machineInterface = machineInterface;
+    this.isOn = false;
     this._isClean = true;
     this._isBroken = false;
     // this._grainType = ['ground', 'whole grains'];
     this.typesOfCoffee = ['cappuccino', 'raf', 'dark coffee'];
     this.recipes = [
-      {coffeeName: 'cappuccino', color: 'rosybrown', withMilk: true},
-      {coffeeName: 'raf', color: 'brown',  withMilk: true},
-      {coffeeName: 'dark coffee', color: '#392919',  withMilk: false},
+      {coffeeName: 'cappuccino', color: '#CFAA8F', withMilk: true},
+      {coffeeName: 'raf', color: '#CFA780',  withMilk: true},
+      {coffeeName: 'dark coffee', color: '#4F240A',  withMilk: false},
     ];
     this._amountWaste = 0;
     this._isAvailableGrain = 100;
@@ -29,7 +30,7 @@ export class CoffeeMachine {
     `);
 
       this._machineInterface.setupPlaySoundOnEventClick()
-      this._machineInterface.setupOnSwitchOnEventClick(this.turnOn.bind(this))
+      this._machineInterface.setupOnSwitchOnEventClick(this.pending.bind(this))
       this._machineInterface.showTypesCoffee(this.typesOfCoffee)
       this._machineInterface.setupOnCleanWasteOnEventClick(this.clean.bind(this))
   }
@@ -72,7 +73,7 @@ export class CoffeeMachine {
     return true;
   }
 
-  _prepare() {
+  _prepare(delayMs) {
     console.log('проверяю...');
       return new Promise((resolve, reject) => {
 
@@ -92,17 +93,27 @@ export class CoffeeMachine {
           resolve(console.log('я готова делать кофе!'));
           this._machineInterface.stopPendingAnimation()
 
-        }, 5000);
+        }, delayMs);
       });
   }
 
+  pending(selectTypeOfCoffee) {
+    if (this.isOn) {
+      this.afterTurnOn();
+      return this._makeCoffee(this.searchTargetRecipe(selectTypeOfCoffee)[0]).finally(() => this._machineInterface.enabledAllButtons())
+    } else {
+      this.turnOn()
+    }
+  }
+
   turnOn() {
-    this._prepare()
-    .then(() => this._machineInterface.setupOnMakeCoffeeTypesOnEventClick((typeOfCoffee => typeOfCoffee)))
-    .then((selectTypeOfCoffee) => {
-      selectTypeOfCoffee = this.searchTargetRecipe(selectTypeOfCoffee)[0];
-      return this._makeCoffee(selectTypeOfCoffee)
-    })
+    this.isOn = true;
+    this._prepare(0).then(this.afterTurnOn())
+  }
+
+  afterTurnOn() {
+    return this._machineInterface.setupOnMakeCoffeeTypesOnEventClick((typeOfCoffee => typeOfCoffee))
+    .then((typeOfCoffee) => this.pending(typeOfCoffee))
   }
 
   _makeCoffee(typeOfCoffee) {
@@ -113,18 +124,23 @@ export class CoffeeMachine {
   }
 
   _brewingCoffee(typeOfCoffee, ms) {
-    this._delay(() => {
+    return new Promise((resolve) => {
+      this._delay(() => {
 
-      this._consumeIngredients(typeOfCoffee.coffeeName)
+        this._consumeIngredients(typeOfCoffee.coffeeName)
 
-      if (typeOfCoffee.withMilk) {
-        this._whipMilk()
-        .then(() => this._pouringCoffee(typeOfCoffee.color))
-      } else {
-        this._pouringCoffee(typeOfCoffee.color)
-      }
+        if (typeOfCoffee.withMilk) {
+          resolve(this._whipMilk()
+          .then(
+            () => this._pouringCoffee(typeOfCoffee.color),
+            (err) => console.error(new Error('красная кнопка заглушка!1'), err)
+          ))
+        } else {
+          resolve(this._pouringCoffee(typeOfCoffee.color))
+        }
 
-    }, ms)
+      }, ms)
+    })
   }
 
   _consumeIngredients(typeOfCoffee) {
@@ -142,15 +158,19 @@ export class CoffeeMachine {
         this._amountWaste += 20;
         break
     }
+
+    this._isClean = false;
   }
 
   _pouringCoffee(colorCoffee) {
-    this._machineInterface.onPouringDrinkAnimation(4, colorCoffee)
+    return new Promise ((resolve) => {
+      this._machineInterface.onPouringDrinkAnimation(4, colorCoffee)
 
-    this._delay(() => {
-      console.log('кофе готов!')
-      this._machineInterface.stopPendingAnimation()
-    }, 10000)
+      this._delay(() => {
+        this._machineInterface.stopPendingAnimation()
+        resolve(console.log('кофе готов!'))
+      }, 10000)
+    })
   }
 
   _delay(cb, ms) {
