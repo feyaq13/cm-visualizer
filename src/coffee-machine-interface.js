@@ -5,19 +5,30 @@ export class CoffeeMachineInterface {
     this._soundClickButtons = new Audio(audioURL);
     this._buttonElements = document.getElementsByClassName('button');
     this._switchOnButton =  Array.prototype.filter.call(this._buttonElements, (button => button.classList.contains('button_is-switch-on')))[0]
-    this._buttonElementsNav = document.getElementsByClassName('coffee-list')[0].getElementsByTagName('button');
+    this._buttonElementsNav = document.getElementsByClassName('coffee-list')[0];
     this._cupElement = document.getElementsByClassName('coffee-cup')[0];
   }
 
   setupOnMakeCoffeeTypesOnEventClick() {
     return new Promise((resolve => {
-      Array.prototype.forEach.call(this._buttonElementsNav, (button) => button.addEventListener('click', this._getTypeCoffee.bind(this, typeOfCoffee => resolve(typeOfCoffee))))
+      this._buttonElementsNav.addEventListener('click', this._getTypeCoffee.bind(this, typeOfCoffee => resolve(typeOfCoffee)))
     }))
   }
 
   _getTypeCoffee(cb, e) {
-    this.onPendingAnimation()
-    return cb(e.target.textContent)
+    if (e.target.type === 'button') {
+      this.onPendingAnimation()
+      this.disabledAllButtons(e)
+      return cb(e.target.textContent)
+    }
+  }
+
+  disabledAllButtons(e) {
+    Array.prototype.forEach.call(e.currentTarget.getElementsByTagName('button'), (button) => button.disabled = true)
+  }
+
+  enabledAllButtons() {
+    Array.prototype.forEach.call(this._buttonElementsNav.getElementsByTagName('button'), (button) => button.disabled = false)
   }
 
   setupOnCleanWasteOnEventClick(cb) {
@@ -61,6 +72,7 @@ export class CoffeeMachineInterface {
 
       coffee.forEach((coffeeName) => {
         const buttonElement = document.createElement('button')
+        buttonElement.type = 'button'
         const listItemElement = document.createElement('li')
         buttonElement.textContent = coffeeName
         listItemElement.appendChild(buttonElement);
