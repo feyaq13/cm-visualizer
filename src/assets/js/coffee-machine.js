@@ -1,5 +1,6 @@
 export class CoffeeMachine {
-  constructor(machineInterface, hasCappuccinoMaker) {
+  constructor(machineInterface, config) {
+    const { hasCappuccinoMaker } = config
     this._hasCappuccinoMaker = hasCappuccinoMaker;
     this._machineInterface = machineInterface;
     this.isOn = false;

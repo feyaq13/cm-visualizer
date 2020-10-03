@@ -1,4 +1,4 @@
-import audioURL from './assets/sounds/switch-click-button.mp3';
+import audioURL from '../sounds/switch-click-button.mp3';
 
 export class CoffeeMachineInterface {
   constructor() {

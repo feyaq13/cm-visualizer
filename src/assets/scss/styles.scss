@@ -25,6 +25,12 @@ svg {
   margin: auto;
 }
 
+path:hover::after {
+  content: attr(alt);
+  position: absolute;
+  z-index: 10000;
+}
+
 .button {
   cursor: pointer;
 
