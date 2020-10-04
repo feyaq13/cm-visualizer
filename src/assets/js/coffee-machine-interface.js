@@ -1,14 +1,28 @@
-import audioURL from './assets/sounds/switch-click-button.mp3';
+import clickButtonSound from '../sounds/switch-click-button.mp3';
+import pouringCoffeeSound from '../sounds/pouring-coffee.mp3';
 
 export class CoffeeMachineInterface {
   constructor() {
-    this._soundClickButtons = new Audio(audioURL);
+    this.clickButtonsSound = new Audio(clickButtonSound);
+    this.pouringCoffeeSound = new Audio(pouringCoffeeSound);
     this._buttonElements = document.getElementsByClassName('button');
     this._switchOnButton = Array.prototype.filter.call(this._buttonElements, (button) =>
       button.classList.contains('button_is-switch-on'),
     )[0];
     this._buttonElementsNav = document.getElementsByClassName('coffee-list')[0];
     this._cupElement = document.getElementsByClassName('coffee-cup')[0];
+  }
+
+  showIngredientsAvailable(ingAvailableObj) {
+    const listIngredients = document.getElementsByClassName('information')[0];
+    for (const ingName of Object.keys(ingAvailableObj)) {
+      if (ingAvailableObj.hasOwnProperty(ingName)) {
+          const ingredient = document.createElement('li');
+          ingredient.classList.add(`coffee-machine__${ingName}`)
+          ingredient.textContent = `${ingName} ${ingAvailableObj[ingName]}`;
+          listIngredients.appendChild(ingredient)
+        }
+    }
   }
 
   setupOnMakeCoffeeTypesOnEventClick() {
@@ -44,9 +58,9 @@ export class CoffeeMachineInterface {
     document.getElementsByClassName('button-clean-waste')[0].addEventListener('click', cb);
   }
 
-  async _playSoundClickButtons() {
+  async playSound(sound, ms) {
     try {
-      await this._soundClickButtons.play();
+      await sound.play();
     } catch (err) {
       console.error(err);
     }
@@ -59,7 +73,7 @@ export class CoffeeMachineInterface {
   onPouringDrinkAnimation(ms, colorCoffee) {
     this._cupElement.style.fill = colorCoffee;
     this._cupElement.classList.add('pouring-mode');
-    this._cupElement.style.animationDuration = ms;
+    this._cupElement.style.animationDuration = `${ms}ms`;
   }
 
   stopPendingAnimation() {
@@ -69,7 +83,7 @@ export class CoffeeMachineInterface {
 
   setupPlaySoundOnEventClick() {
     Array.prototype.forEach.call(this._buttonElements, (button) =>
-      button.addEventListener('click', this._playSoundClickButtons.bind(this)),
+      button.addEventListener('click', this.playSound.bind(this, this.clickButtonsSound)),
     );
   }
 
