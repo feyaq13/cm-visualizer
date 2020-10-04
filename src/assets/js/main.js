@@ -5,6 +5,38 @@ const myCoffeeMachine = new CoffeeMachine({
   hasCappuccinoMaker: true,
   dev: false,
   interfaces: [new CoffeeMachineInterface()],
+  recipes: [
+    {
+      coffeeName: 'cappuccino',
+      color: '#CFAA8F',
+      recipe: {
+        withMilk: true,
+        milkRequired: 20,
+        waterRequired: 10,
+        grainRequired: 20,
+      },
+    },
+    {
+      coffeeName: 'raf',
+      color: '#CFA780',
+      recipe: {
+        withMilk: true,
+        milkRequired: 20,
+        waterRequired: 10,
+        grainRequired: 20,
+      },
+    },
+    {
+      coffeeName: 'dark coffee',
+      color: '#4F240A',
+      recipe: {
+        withMilk: false,
+        milkRequired: 0,
+        waterRequired: 10,
+        grainRequired: 20,
+      },
+    },
+  ],
 });
 
 window.cm = myCoffeeMachine;

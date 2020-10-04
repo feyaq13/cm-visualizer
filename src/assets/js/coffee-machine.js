@@ -8,110 +8,50 @@ export class Publisher {
   }
 
   on(event, handler) {
+    if (!this._eventHandlers[event]) {
+      this._eventHandlers[event] = [];
+    }
+
     this._eventHandlers[event].push(handler);
+  }
+
+  onEvents(obj) {
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        this.on(key, obj[key]);
+      }
+    }
   }
 }
 
 export class CoffeeMachine extends Publisher {
   constructor(config) {
     super();
-    const { hasCappuccinoMaker, dev, interfaces } = config;
+    const { hasCappuccinoMaker, dev, interfaces, recipes } = config;
     this._isDev = dev;
     this._hasCappuccinoMaker = hasCappuccinoMaker;
     this.isOn = false;
     this._isClean = true;
-    this._eventHandlers = {
-      noWater: [],
-      noGrains: [],
-      noMilk: [],
-      whipping: [],
-      coffeeReady: [],
-      brewing: [],
-      welcome: [],
-      pouring: [],
-      cleaning: [],
-      ready: [],
-      clear: [],
-      checking: [],
-    };
     this._isBroken = false;
-    this.recipes = [
-      {
-        coffeeName: 'cappuccino',
-        color: '#CFAA8F',
-        recipe: {
-          withMilk: true,
-          milkRequired: 20,
-          waterRequired: 10,
-          grainRequired: 20,
-        },
-      },
-      {
-        coffeeName: 'raf',
-        color: '#CFA780',
-        recipe: {
-          withMilk: true,
-          milkRequired: 20,
-          waterRequired: 10,
-          grainRequired: 20,
-        },
-      },
-      {
-        coffeeName: 'dark coffee',
-        color: '#4F240A',
-        recipe: {
-          withMilk: false,
-          milkRequired: 0,
-          waterRequired: 10,
-          grainRequired: 20,
-        },
-      },
-    ];
+    this.recipes = recipes;
     this.coffeeTypes = this.recipes.map((r) => r.coffeeName);
     this._wasteAmount = 0;
     this._ingredientsAvailable = {
-      get grainAvailable() {
-        return this._grainAvailable;
-      },
-      set grainAvailable(value) {
-        this._grainAvailable = value;
-      },
-      get waterAvailable() {
-        return this._waterAvailable;
-      },
-      set waterAvailable(value) {
-        this._waterAvailable = value;
-      },
-      get milkAvailable() {
-        return this._milkAvailable;
-      },
-      set milkAvailable(value) {
-        this._milkAvailable = value;
-      },
+      grainAvailable: 100,
+      waterAvailable: 100,
+      milkAvailable: 100,
     };
 
-    Object.defineProperties(this._ingredientsAvailable, {
-      _grainAvailable: {
-        value: 100,
-        writable: true,
-      },
-      _waterAvailable: {
-        value: 100,
-        writable: true,
-      },
-      _milkAvailable: {
-        value: 100,
-        writable: true,
-      },
-    });
-
     interfaces.forEach((machineInterface) => {
-      machineInterface.on('switchOn', this.pendingSelectCoffee.bind(this));
-      machineInterface.on('cleanUp', this.clean.bind(this));
-      machineInterface.on('coffeeSelected', ({ coffeeName }) => {
-        const coffeeType = this.searchTargetRecipe(coffeeName);
-        this._brewCoffee(coffeeType);
+      machineInterface.onEvents({
+        switchOn: () => this.pendingSelectCoffee(),
+        cleanUp: () => this.clean(),
+        coffeeSelected: ({ coffeeName }) => {
+          const coffeeType = this.searchTargetRecipe(coffeeName);
+          this._brewCoffee(coffeeType);
+        },
       });
+
       machineInterface.setupEvents(this);
     });
 
@@ -216,16 +156,12 @@ export class CoffeeMachine extends Publisher {
   _pourCoffee(colorCoffee) {
     this._emit('pouring', { colorCoffee });
     this._delay(10000).then(() => {
-      this._emit('coffeeReady');
+      this._emit('coffeeReady', this._ingredientsAvailable);
     });
   }
 
   _delay(ms) {
-    const isDev = this._isDev;
-
-    return new Promise((resolve) => {
-      setTimeout(resolve, isDev ? 10 : ms);
-    });
+    return new Promise((resolve) => setTimeout(resolve, this._isDev ? 10 : ms));
   }
 
   _whipMilk() {

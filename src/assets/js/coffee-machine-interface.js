@@ -13,66 +13,64 @@ export class CoffeeMachineInterface extends Publisher {
     )[0];
     this._buttonElementsNav = document.getElementsByClassName('coffee-list')[0];
     this._cupElement = document.getElementsByClassName('coffee-cup')[0];
-    this._eventHandlers = {
-      switchOn: [],
-      cleanUp: [],
-      coffeeSelected: [],
-    };
     this.setupPlaySoundOnEventClick();
     this.setupOnSwitchOnEventClick();
     this.setupOnCleanWasteOnEventClick();
   }
 
   setupEvents(machine) {
-    machine.on('coffeeReady', () => {
-      this.stopBusyAnimation();
-      this.enableAllButtons();
-      console.log('Кофе готов!');
-    });
-    machine.on('noMilk', () => {
-      console.log('кажется нет молока');
-    });
-    machine.on('noGrains', () => {
-      console.log('нет зерен');
-    });
-    machine.on('noWater', () => {
-      console.log('кажется нет воды');
-    });
-    machine.on('whipping', () => {
-      console.log('взбиваю 🥛...');
-    });
-    machine.on('pouring', ({ colorCoffee }) => {
-      this.startPouringDrinkAnimation(40, colorCoffee);
-      this.playSound(this.pouringCoffeeSound);
-    });
-    machine.on('cleaning', () => {
-      console.log('очищаю...');
-    });
-    machine.on('clear', () => {
-      console.log('очистил 🧹');
-    });
-    machine.on('ready', () => {
-      this.stopBusyAnimation();
-      this.setupOnMakeCoffeeTypesOnEventClick((coffeeType) => coffeeType);
-      console.log('я готова делать кофе!');
-    });
-    machine.on('checking', () => {
-      console.log('проверяю...');
-      this.startBusyAnimation();
-    });
-    machine.on('brewing', ({ coffeeType }) => {
-      console.log(`завариваю ${coffeeType.coffeeName}`);
-    });
-    machine.on('welcome', ({ coffeeTypes, ingredientsAvailable }) => {
-      this.showTypesCoffee(coffeeTypes);
-      this.showIngredientsAvailable(ingredientsAvailable);
-      console.log(`
+    machine.onEvents({
+      coffeeReady: (ingredientsAvailable) => {
+        this.stopBusyAnimation();
+        this.enableAllButtons();
+        console.log('Кофе готов!');
+        this.showIngredientsAvailable(ingredientsAvailable);
+      },
+      noMilk: () => {
+        console.log('кажется нет молока');
+      },
+      noGrains: () => {
+        console.log('нет зерен');
+      },
+      noWater: () => {
+        console.log('кажется нет воды');
+      },
+      whipping: () => {
+        console.log('взбиваю 🥛...');
+      },
+      pouring: ({ colorCoffee }) => {
+        this.startPouringDrinkAnimation(40, colorCoffee);
+        this.playSound(this.pouringCoffeeSound);
+      },
+      cleaning: () => {
+        console.log('очищаю...');
+      },
+      clear: () => {
+        console.log('очистил 🧹');
+      },
+      ready: () => {
+        this.stopBusyAnimation();
+        this.setupOnMakeCoffeeTypesOnEventClick((coffeeType) => coffeeType);
+        console.log('я готова делать кофе!');
+      },
+      checking: () => {
+        console.log('проверяю...');
+        this.startBusyAnimation();
+      },
+      brewing: ({ coffeeType }) => {
+        console.log(`завариваю ${coffeeType.coffeeName}`);
+      },
+      welcome: ({ coffeeTypes, ingredientsAvailable }) => {
+        this.showTypesCoffee(coffeeTypes);
+        this.showIngredientsAvailable(ingredientsAvailable);
+        console.log(`
         Добро пожаловать!
         Ознакомьтесь, пожалуйста, с нашим меню:
         ${coffeeTypes.join(', ')}
         Для выбора напитка просто напишите его название.
         Приятного аппетита!
       `);
+      },
     });
   }
 
