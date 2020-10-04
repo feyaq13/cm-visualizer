@@ -1,8 +1,10 @@
-'use strict'
-
 import { CoffeeMachineInterface } from './coffee-machine-interface';
 import { CoffeeMachine } from './coffee-machine';
 
-const myCoffeeMachine = new CoffeeMachine(new CoffeeMachineInterface(), {hasCappuccinoMaker: true, dev: true});
+const myCoffeeMachine = new CoffeeMachine({
+  hasCappuccinoMaker: true,
+  dev: false,
+  interfaces: [new CoffeeMachineInterface()],
+});
 
 window.cm = myCoffeeMachine;

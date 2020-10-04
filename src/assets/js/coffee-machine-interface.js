@@ -1,8 +1,10 @@
 import clickButtonSound from '../sounds/switch-click-button.mp3';
 import pouringCoffeeSound from '../sounds/pouring-coffee.mp3';
+import { Publisher } from './coffee-machine';
 
-export class CoffeeMachineInterface {
+export class CoffeeMachineInterface extends Publisher {
   constructor() {
+    super();
     this.clickButtonsSound = new Audio(clickButtonSound);
     this.pouringCoffeeSound = new Audio(pouringCoffeeSound);
     this._buttonElements = document.getElementsByClassName('button');
@@ -11,36 +13,90 @@ export class CoffeeMachineInterface {
     )[0];
     this._buttonElementsNav = document.getElementsByClassName('coffee-list')[0];
     this._cupElement = document.getElementsByClassName('coffee-cup')[0];
+    this._eventHandlers = {
+      switchOn: [],
+      cleanUp: [],
+      coffeeSelected: [],
+    };
+    this.setupPlaySoundOnEventClick();
+    this.setupOnSwitchOnEventClick();
+    this.setupOnCleanWasteOnEventClick();
   }
 
-  showIngredientsAvailable(ingAvailableObj) {
+  setupEvents(machine) {
+    machine.on('coffeeReady', () => {
+      this.stopBusyAnimation();
+      this.enableAllButtons();
+      console.log('Кофе готов!');
+    });
+    machine.on('noMilk', () => {
+      console.log('кажется нет молока');
+    });
+    machine.on('noGrains', () => {
+      console.log('нет зерен');
+    });
+    machine.on('noWater', () => {
+      console.log('кажется нет воды');
+    });
+    machine.on('whipping', () => {
+      console.log('взбиваю 🥛...');
+    });
+    machine.on('pouring', ({ colorCoffee }) => {
+      this.startPouringDrinkAnimation(40, colorCoffee);
+      this.playSound(this.pouringCoffeeSound);
+    });
+    machine.on('cleaning', () => {
+      console.log('очищаю...');
+    });
+    machine.on('clear', () => {
+      console.log('очистил 🧹');
+    });
+    machine.on('ready', () => {
+      this.stopBusyAnimation();
+      this.setupOnMakeCoffeeTypesOnEventClick((coffeeType) => coffeeType);
+      console.log('я готова делать кофе!');
+    });
+    machine.on('checking', () => {
+      console.log('проверяю...');
+      this.startBusyAnimation();
+    });
+    machine.on('brewing', ({ coffeeType }) => {
+      console.log(`завариваю ${coffeeType.coffeeName}`);
+    });
+    machine.on('welcome', ({ coffeeTypes, ingredientsAvailable }) => {
+      this.showTypesCoffee(coffeeTypes);
+      this.showIngredientsAvailable(ingredientsAvailable);
+      console.log(`
+        Добро пожаловать!
+        Ознакомьтесь, пожалуйста, с нашим меню:
+        ${coffeeTypes.join(', ')}
+        Для выбора напитка просто напишите его название.
+        Приятного аппетита!
+      `);
+    });
+  }
+
+  showIngredientsAvailable(ingredientsAvailable) {
     const listIngredients = document.getElementsByClassName('information')[0];
-    for (const ingName of Object.keys(ingAvailableObj)) {
-      if (ingAvailableObj.hasOwnProperty(ingName)) {
-          const ingredient = document.createElement('li');
-          ingredient.classList.add(`coffee-machine__${ingName}`)
-          ingredient.textContent = `${ingName} ${ingAvailableObj[ingName]}`;
-          listIngredients.appendChild(ingredient)
-        }
+    for (const ingName of Object.keys(ingredientsAvailable)) {
+      if (ingredientsAvailable.hasOwnProperty(ingName)) {
+        const ingredient = document.createElement('li');
+        ingredient.classList.add(`coffee-machine__${ingName}`);
+        ingredient.textContent = `${ingName} ${ingredientsAvailable[ingName]}`;
+        listIngredients.appendChild(ingredient);
+      }
     }
   }
 
   setupOnMakeCoffeeTypesOnEventClick() {
-    return new Promise((resolve) => {
-      this._buttonElementsNav.addEventListener(
-        'click',
-        this._getTypeCoffee.bind(this, (coffeeType) => resolve(coffeeType)),
-      );
+    this._buttonElementsNav.addEventListener('click', (e) => {
+      if (e.target.type === 'button') {
+        this.startBusyAnimation();
+        this.disableAllButtons(e);
+
+        this._emit('coffeeSelected', { coffeeName: e.target.textContent });
+      }
     });
-  }
-
-  _getTypeCoffee(cb, e) {
-    if (e.target.type === 'button') {
-      this.onPendingAnimation();
-      this.disableAllButtons(e);
-
-      return cb(e.target.textContent);
-    }
   }
 
   disableAllButtons(e) {
@@ -54,29 +110,27 @@ export class CoffeeMachineInterface {
     );
   }
 
-  setupOnCleanWasteOnEventClick(cb) {
-    document.getElementsByClassName('button-clean-waste')[0].addEventListener('click', cb);
+  setupOnCleanWasteOnEventClick() {
+    document.getElementsByClassName('button-clean-waste')[0].addEventListener('click', () => {
+      this._eventHandlers.cleanUp.forEach((handler) => handler());
+    });
   }
 
-  async playSound(sound, ms) {
-    try {
-      await sound.play();
-    } catch (err) {
-      console.error(err);
-    }
+  playSound(sound) {
+    sound.play();
   }
 
-  onPendingAnimation() {
+  startBusyAnimation() {
     this._switchOnButton.classList.add('pending-mode');
   }
 
-  onPouringDrinkAnimation(ms, colorCoffee) {
+  startPouringDrinkAnimation(ms, colorCoffee) {
     this._cupElement.style.fill = colorCoffee;
     this._cupElement.classList.add('pouring-mode');
     this._cupElement.style.animationDuration = `${ms}ms`;
   }
 
-  stopPendingAnimation() {
+  stopBusyAnimation() {
     this._switchOnButton.setAttribute('aria-checked', 'true');
     this._switchOnButton.classList.remove('pending-mode');
   }
@@ -87,15 +141,17 @@ export class CoffeeMachineInterface {
     );
   }
 
-  setupOnSwitchOnEventClick(cb) {
-    this._switchOnButton.addEventListener('click', cb, { once: true });
+  setupOnSwitchOnEventClick() {
+    this._switchOnButton.addEventListener('click', () => {
+      this._eventHandlers.switchOn.forEach((handler) => handler());
+    });
   }
 
-  showTypesCoffee(coffee) {
+  showTypesCoffee(coffeeTypes) {
     if (document.getElementsByClassName('coffee-list')[0].childElementCount === 0) {
       const coffeeListElement = document.getElementsByClassName('coffee-list')[0];
 
-      coffee.forEach((coffeeName) => {
+      coffeeTypes.forEach((coffeeName) => {
         const buttonElement = document.createElement('button');
         buttonElement.type = 'button';
         const listItemElement = document.createElement('li');
