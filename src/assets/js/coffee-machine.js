@@ -40,9 +40,45 @@ export class CoffeeMachine {
     ];
     this.coffeeTypes = this.recipes.map((r) => r.coffeeName);
     this._wasteAmount = 0;
-    this._grainAvailable = 100;
-    this._waterAvailable = 100;
-    this._milkAvailable = 100;
+    this._ingredientsAvailable = {
+      get grainAvailable() {
+        return this._grainAvailable;
+      },
+      set grainAvailable(value) {
+        console.log("New value: " + value);
+        this._grainAvailable = value;
+      },
+      get waterAvailable() {
+        return this._waterAvailable;
+      },
+      set waterAvailable(value) {
+        console.log("New value: " + value);
+        this._waterAvailable = value;
+      },
+      get milkAvailable() {
+        return this._milkAvailable;
+      },
+      set milkAvailable(value) {
+        console.log("New value: " + value);
+        this._milkAvailable = value;
+      }
+    }
+
+    Object.defineProperties(this._ingredientsAvailable, {
+      _grainAvailable: {
+        value: 100,
+        writable: true
+      },
+      _waterAvailable: {
+        value: 100,
+        writable: true
+      },
+      _milkAvailable: {
+        value: 100,
+        writable: true
+      }
+    })
+
     this._init();
   }
 
@@ -58,6 +94,7 @@ export class CoffeeMachine {
     this._machineInterface.setupPlaySoundOnEventClick();
     this._machineInterface.setupOnSwitchOnEventClick(this.pendingSelectCoffee.bind(this));
     this._machineInterface.showTypesCoffee(this.coffeeTypes);
+    this._machineInterface.showIngredientsAvailable(this._ingredientsAvailable);
     this._machineInterface.setupOnCleanWasteOnEventClick(this.clean.bind(this));
   }
 
@@ -76,22 +113,22 @@ export class CoffeeMachine {
   }
 
   _checkContentsForMakingCoffee() {
-    if (this._grainAvailable <= 0) {
+    if (this._ingredientsAvailable.grainAvailable <= 0) {
       console.log('добавьте кофе');
 
       return false;
     }
 
-    if (this._waterAvailable <= 0) {
+    if (this._ingredientsAvailable.waterAvailable <= 0) {
       console.log('долейте воды');
 
       return false;
     }
 
-    if (this._milkAvailable <= 0) {
+    if (this._ingredientsAvailable.milkAvailable <= 0) {
       console.log(
         `
-    уровень молока ниже необходимого: ${this._milkAvailable},
+    уровень молока ниже необходимого: ${this._ingredientsAvailable.milkAvailable},
     долейте молока
     `,
       );
@@ -174,9 +211,9 @@ export class CoffeeMachine {
   _consumeIngredients(coffeeType) {
     const { waterRequired, grainRequired, milkRequired } = coffeeType.recipe;
 
-    this._milkAvailable -= milkRequired;
-    this._grainAvailable -= grainRequired;
-    this._waterAvailable -= waterRequired;
+    this._ingredientsAvailable.milkAvailable -= milkRequired;
+    this._ingredientsAvailable.grainAvailable -= grainRequired;
+    this._ingredientsAvailable.waterAvailable -= waterRequired;
     this._wasteAmount += grainRequired;
 
     this._isClean = false;
@@ -202,7 +239,7 @@ export class CoffeeMachine {
   _whipMilk() {
     return new Promise((resolve, reject) => {
       this._delay(2000).then(() => {
-        if (this._hasCappuccinoMaker && this._milkAvailable > 0) {
+        if (this._hasCappuccinoMaker && this._ingredientsAvailable.milkAvailable > 0) {
           resolve(console.log('взбиваю 🥛...'));
         } else {
           reject(console.log('кажется нет молока'));

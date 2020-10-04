@@ -11,6 +11,18 @@ export class CoffeeMachineInterface {
     this._cupElement = document.getElementsByClassName('coffee-cup')[0];
   }
 
+  showIngredientsAvailable(ingAvailableObj) {
+    const listIngredients = document.getElementsByClassName('information')[0];
+    for (const ingName of Object.keys(ingAvailableObj)) {
+      if (ingAvailableObj.hasOwnProperty(ingName)) {
+          const ingredient = document.createElement('li');
+          ingredient.classList.add(`coffee-machine__${ingName}`)
+          ingredient.textContent = `${ingName} ${ingAvailableObj[ingName]}`;
+          listIngredients.appendChild(ingredient)
+        }
+    }
+  }
+
   setupOnMakeCoffeeTypesOnEventClick() {
     return new Promise((resolve) => {
       this._buttonElementsNav.addEventListener(
@@ -59,7 +71,7 @@ export class CoffeeMachineInterface {
   onPouringDrinkAnimation(ms, colorCoffee) {
     this._cupElement.style.fill = colorCoffee;
     this._cupElement.classList.add('pouring-mode');
-    this._cupElement.style.animationDuration = ms;
+    this._cupElement.style.animationDuration = `${ms}ms`;
   }
 
   stopPendingAnimation() {
