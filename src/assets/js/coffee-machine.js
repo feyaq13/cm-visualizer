@@ -221,7 +221,7 @@ export class CoffeeMachine {
   _pourCoffee(colorCoffee) {
     return new Promise((resolve) => {
       this._machineInterface.onPouringDrinkAnimation(40, colorCoffee);
-
+      this._machineInterface.playSound(this._machineInterface.pouringCoffeeSound)
       this._delay(10000).then(() => {
         this._machineInterface.stopPendingAnimation();
         resolve(console.log('кофе готов!'));

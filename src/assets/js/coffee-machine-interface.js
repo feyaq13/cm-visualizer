@@ -1,8 +1,10 @@
-import audioURL from '../sounds/switch-click-button.mp3';
+import clickButtonSound from '../sounds/switch-click-button.mp3';
+import pouringCoffeeSound from '../sounds/pouring-coffee.mp3';
 
 export class CoffeeMachineInterface {
   constructor() {
-    this._soundClickButtons = new Audio(audioURL);
+    this.clickButtonsSound = new Audio(clickButtonSound);
+    this.pouringCoffeeSound = new Audio(pouringCoffeeSound);
     this._buttonElements = document.getElementsByClassName('button');
     this._switchOnButton = Array.prototype.filter.call(this._buttonElements, (button) =>
       button.classList.contains('button_is-switch-on'),
@@ -56,9 +58,9 @@ export class CoffeeMachineInterface {
     document.getElementsByClassName('button-clean-waste')[0].addEventListener('click', cb);
   }
 
-  async _playSoundClickButtons() {
+  async playSound(sound, ms) {
     try {
-      await this._soundClickButtons.play();
+      await sound.play();
     } catch (err) {
       console.error(err);
     }
@@ -81,7 +83,7 @@ export class CoffeeMachineInterface {
 
   setupPlaySoundOnEventClick() {
     Array.prototype.forEach.call(this._buttonElements, (button) =>
-      button.addEventListener('click', this._playSoundClickButtons.bind(this)),
+      button.addEventListener('click', this.playSound.bind(this, this.clickButtonsSound)),
     );
   }
 
