@@ -36,11 +36,7 @@ export class CoffeeMachine extends Publisher {
     this.recipes = recipes;
     this.coffeeTypes = this.recipes.map((r) => r.coffeeName);
     this._wasteAmount = 0;
-    this._ingredientsAvailable = {
-      grainAvailable: 100,
-      waterAvailable: 100,
-      milkAvailable: 100,
-    };
+    this._ingredientsAvailable = { grain: 100, water: 100, milk: 100 };
 
     interfaces.forEach((machineInterface) => {
       machineInterface.onEvents({
@@ -73,19 +69,19 @@ export class CoffeeMachine extends Publisher {
   }
 
   _ingredientsAreSufficient() {
-    if (this._ingredientsAvailable.grainAvailable <= 0) {
+    if (this._ingredientsAvailable.grain <= 0) {
       this._emit('noGrains');
 
       return false;
     }
 
-    if (this._ingredientsAvailable.waterAvailable <= 0) {
+    if (this._ingredientsAvailable.water <= 0) {
       this._emit('noWater');
 
       return false;
     }
 
-    if (this._ingredientsAvailable.milkAvailable <= 0) {
+    if (this._ingredientsAvailable.milk <= 0) {
       this._emit('noMilk');
 
       return false;
@@ -145,9 +141,9 @@ export class CoffeeMachine extends Publisher {
   _consumeIngredients(coffeeType) {
     const { waterRequired, grainRequired, milkRequired } = coffeeType.recipe;
 
-    this._ingredientsAvailable.milkAvailable -= milkRequired;
-    this._ingredientsAvailable.grainAvailable -= grainRequired;
-    this._ingredientsAvailable.waterAvailable -= waterRequired;
+    this._ingredientsAvailable.milk -= milkRequired;
+    this._ingredientsAvailable.grain -= grainRequired;
+    this._ingredientsAvailable.water -= waterRequired;
     this._wasteAmount += grainRequired;
 
     this._isClean = false;
@@ -166,7 +162,7 @@ export class CoffeeMachine extends Publisher {
 
   _whipMilk() {
     return this._delay(2000).then(() => {
-      if (this._hasCappuccinoMaker && this._ingredientsAvailable.milkAvailable > 0) {
+      if (this._hasCappuccinoMaker && this._ingredientsAvailable.milk > 0) {
         this._emit('whipping');
       } else {
         this._emit('noMilk');
