@@ -1,6 +1,7 @@
 export class CoffeeMachine {
   constructor(machineInterface, config) {
-    const { hasCappuccinoMaker } = config
+    const { hasCappuccinoMaker, dev } = config
+    this._isDev = dev;
     this._hasCappuccinoMaker = hasCappuccinoMaker;
     this._machineInterface = machineInterface;
     this.isOn = false;
@@ -196,11 +197,9 @@ export class CoffeeMachine {
 
         if (coffeeType.recipe.withMilk) {
           this._whipMilk()
-            .then(
-              () => this._pourCoffee(coffeeType.color),
-              (err) => console.error(new Error('красная кнопка заглушка!1'), err),
-            )
-            .then(resolve);
+            .then(() => this._pourCoffee(coffeeType.color))
+            .then(resolve)
+            .catch(e => console.error(new Error('красная кнопка заглушка!1'), e))
         } else {
           this._pourCoffee(coffeeType.color).then(resolve);
         }
@@ -221,7 +220,7 @@ export class CoffeeMachine {
 
   _pourCoffee(colorCoffee) {
     return new Promise((resolve) => {
-      this._machineInterface.onPouringDrinkAnimation(4, colorCoffee);
+      this._machineInterface.onPouringDrinkAnimation(40, colorCoffee);
 
       this._delay(10000).then(() => {
         this._machineInterface.stopPendingAnimation();
@@ -231,8 +230,9 @@ export class CoffeeMachine {
   }
 
   _delay(ms) {
+    const isDev = this._isDev;
     return new Promise((resolve) => {
-      setTimeout(resolve, ms);
+      setTimeout(resolve, isDev ? 10 : ms);
     });
   }
 
