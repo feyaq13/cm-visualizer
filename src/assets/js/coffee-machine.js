@@ -15,11 +15,9 @@ export class Publisher {
     this._eventHandlers[event].push(handler);
   }
 
-  onEvents(obj) {
-    for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        this.on(key, obj[key]);
-      }
+  onEvents(eventsMap) {
+    for (const event of Reflect.ownKeys(eventsMap)) {
+      this.on(event, eventsMap[event]);
     }
   }
 }
