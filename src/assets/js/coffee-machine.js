@@ -25,9 +25,8 @@ export class Publisher {
 export class CoffeeMachine extends Publisher {
   constructor(config) {
     super();
-    const { hasCappuccinoMaker, dev, interfaces, recipes } = config;
+    const { dev, interfaces, recipes } = config;
     this._isDev = dev;
-    this._hasCappuccinoMaker = hasCappuccinoMaker;
     this.isOn = false;
     this._isClean = true;
     this._isBroken = false;
@@ -160,7 +159,7 @@ export class CoffeeMachine extends Publisher {
 
   _whipMilk() {
     return this._delay(2000).then(() => {
-      if (this._hasCappuccinoMaker && this._ingredientsAvailable.milk > 0) {
+      if (this._ingredientsAvailable.milk > 0) {
         this._emit('whipping');
       } else {
         this._emit('noMilk');
