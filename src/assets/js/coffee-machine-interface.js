@@ -13,9 +13,7 @@ export class CoffeeMachineInterface extends Publisher {
     )[0];
     this._buttonElementsNav = document.getElementsByClassName('coffee-list')[0];
     this._cupElement = document.getElementsByClassName('coffee-cup')[0];
-    this.setupPlaySoundOnEventClick();
-    this.setupOnSwitchOnEventClick();
-    this.setupOnCleanWasteOnEventClick();
+    this.setupControlsHandlers();
   }
 
   setupEvents(machine) {
@@ -98,7 +96,9 @@ export class CoffeeMachineInterface extends Publisher {
   }
 
   disableAllButtons(e) {
-    Array.prototype.forEach.call(e.currentTarget.getElementsByTagName('button'), (button) => (button.disabled = true));
+    Array.prototype.forEach.call(
+      e.currentTarget.getElementsByTagName('button'),
+      (button) => (button.disabled = true));
   }
 
   enableAllButtons() {
@@ -108,18 +108,12 @@ export class CoffeeMachineInterface extends Publisher {
     );
   }
 
-  setupOnCleanWasteOnEventClick() {
-    document.getElementsByClassName('button-clean-waste')[0].addEventListener('click', () => {
-      this._eventHandlers.cleanUp.forEach((handler) => handler());
-    });
-  }
-
   playSound(sound) {
     sound.play();
   }
 
   startBusyAnimation() {
-    this._switchOnButton.classList.add('pending-mode');
+    this._switchOnButton.classList.add('busy-mode');
   }
 
   startPouringDrinkAnimation(ms, colorCoffee) {
@@ -130,18 +124,21 @@ export class CoffeeMachineInterface extends Publisher {
 
   stopBusyAnimation() {
     this._switchOnButton.setAttribute('aria-checked', 'true');
-    this._switchOnButton.classList.remove('pending-mode');
+    this._switchOnButton.classList.remove('busy-mode');
   }
 
-  setupPlaySoundOnEventClick() {
+  setupControlsHandlers() {
     Array.prototype.forEach.call(this._buttonElements, (button) =>
       button.addEventListener('click', this.playSound.bind(this, this.clickButtonsSound)),
     );
-  }
 
-  setupOnSwitchOnEventClick() {
     this._switchOnButton.addEventListener('click', () => {
       this._eventHandlers.switchOn.forEach((handler) => handler());
+    });
+
+    document.getElementsByClassName('button-clean-waste')[0]
+    .addEventListener('click', () => {
+      this._eventHandlers.cleanUp.forEach((handler) => handler());
     });
   }
 
