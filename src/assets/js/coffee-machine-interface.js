@@ -74,12 +74,12 @@ export class CoffeeMachineInterface extends Publisher {
 
   showIngredientsAvailable(ingredientsAvailable) {
     const listIngredients = document.getElementsByClassName('information')[0];
+    const itemsIngredient = listIngredients.children;
     for (const ingName of Object.keys(ingredientsAvailable)) {
       if (ingredientsAvailable.hasOwnProperty(ingName)) {
-        const ingredient = document.createElement('li');
-        ingredient.classList.add(`coffee-machine__${ingName}`);
-        ingredient.textContent = `${ingName} ${ingredientsAvailable[ingName]}`;
-        listIngredients.appendChild(ingredient);
+        Array.prototype.forEach.call(itemsIngredient, item =>
+          item.dataset.name === ingName ? item.textContent = `${ingName}: ${ingredientsAvailable[ingName]}` :  ''
+        )
       }
     }
   }
