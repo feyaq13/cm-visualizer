@@ -1,5 +1,5 @@
-$make-coffee-mode: green;
-$cappuccino-maker-color: red;
+$busy-mode: green;
+$error-mode: red;
 
 html, body, main {
   height: 100%;
@@ -40,36 +40,41 @@ svg {
 
 .button_is-switch-on {
   &[aria-checked='true'] {
-    fill: $make-coffee-mode;
+    fill: $busy-mode;
   }
 }
 
-.button-cappuccino-maker {
-  fill: $cappuccino-maker-color;
+@each $mode, $color in (busy-mode, $busy-mode),
+  (error-mode, $error-mode) {
+  .#{$mode} {
+    animation: flicker-#{$color} 1s infinite;
+  }
 }
 
-.busy-mode {
-  animation: flicker 1s infinite;
+@mixin flickerMode($mode) {
+  @keyframes flicker-#{$mode} {
+    $mode: $mode;
+    0% {
+      fill: $mode;
+    }
+
+    50% {
+      fill: #aab2bd;
+    }
+
+    100% {
+      fill: $mode;
+    }
+  }
 }
+
+@include flickerMode($busy-mode);
+@include flickerMode($error-mode);
 
 .pouring-mode {
   animation-name: increaseCoffee;
   animation-fill-mode: forwards;
   animation-duration: 5s;
-}
-
-@keyframes flicker {
-  0% {
-    fill: $make-coffee-mode;
-  }
-
-  50% {
-    fill: #aab2bd;
-  }
-
-  100% {
-    fill: $make-coffee-mode;
-  }
 }
 
 @keyframes increaseCoffee {
