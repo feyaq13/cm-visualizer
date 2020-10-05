@@ -11,6 +11,7 @@ export class CoffeeMachineInterface extends Publisher {
     this._switchOnButton = Array.prototype.filter.call(this._buttonElements, (button) =>
       button.classList.contains('button_is-switch-on'),
     )[0];
+    this._ingredientContainers = document.getElementsByClassName('container');
     this._buttonElementsNav = document.getElementsByClassName('coffee-list')[0];
     this._cupElement = document.getElementsByClassName('coffee-cup')[0];
     this.setupControlsHandlers();
@@ -19,19 +20,32 @@ export class CoffeeMachineInterface extends Publisher {
   setupEvents(machine) {
     machine.onEvents({
       coffeeReady: (ingredientsAvailable) => {
-        this.stopBusyAnimation();
+        this.stopAnimation('busy');
         this.enableAllButtons();
         console.log('Кофе готов!');
         this.showIngredientsAvailable(ingredientsAvailable);
       },
       noMilk: () => {
         console.log('кажется нет молока');
+        this.stopAnimation('busy');
+        this.startAnimation('error');
       },
       noGrains: () => {
         console.log('нет зерен');
+        this.stopAnimation('busy');
+        this.startAnimation('error');
+      },
+      replenishmentOfIngredients: (ingredientsAvailable, amount) => {
+        console.log(`пополняю запасы на ${amount}`)
+        this.stopAnimation('error');
+
+        this.showIngredientsAvailable(ingredientsAvailable);
+        console.log('я готова делать кофе!');
       },
       noWater: () => {
         console.log('кажется нет воды');
+        this.stopAnimation('busy');
+        this.startAnimation('error');
       },
       whipping: () => {
         console.log('взбиваю 🥛...');
@@ -47,13 +61,13 @@ export class CoffeeMachineInterface extends Publisher {
         console.log('очистил 🧹');
       },
       ready: () => {
-        this.stopBusyAnimation();
+        this.stopAnimation('busy');
         this.setupOnMakeCoffeeTypesOnEventClick((coffeeType) => coffeeType);
         console.log('я готова делать кофе!');
       },
       checking: () => {
         console.log('проверяю...');
-        this.startBusyAnimation();
+        this.startAnimation('busy');
       },
       brewing: ({ coffeeType }) => {
         console.log(`завариваю ${coffeeType.coffeeName}`);
@@ -87,7 +101,7 @@ export class CoffeeMachineInterface extends Publisher {
   setupOnMakeCoffeeTypesOnEventClick() {
     this._buttonElementsNav.addEventListener('click', (e) => {
       if (e.target.type === 'button') {
-        this.startBusyAnimation();
+        this.startAnimation('busy');
         this.disableAllButtons(e);
 
         this._emit('coffeeSelected', { coffeeName: e.target.textContent });
@@ -112,19 +126,18 @@ export class CoffeeMachineInterface extends Publisher {
     sound.play();
   }
 
-  startBusyAnimation() {
-    this._switchOnButton.classList.add('busy-mode');
+  startAnimation(type) {
+    this._switchOnButton.classList.add(`${type}-mode`);
+  }
+
+  stopAnimation(type) {
+    this._switchOnButton.classList.remove(`${type}-mode`);
   }
 
   startPouringDrinkAnimation(ms, colorCoffee) {
     this._cupElement.style.fill = colorCoffee;
     this._cupElement.classList.add('pouring-mode');
     this._cupElement.style.animationDuration = `${ms}ms`;
-  }
-
-  stopBusyAnimation() {
-    this._switchOnButton.setAttribute('aria-checked', 'true');
-    this._switchOnButton.classList.remove('busy-mode');
   }
 
   setupControlsHandlers() {
@@ -139,7 +152,8 @@ export class CoffeeMachineInterface extends Publisher {
     document.getElementsByClassName('button-clean-waste')[0]
     .addEventListener('click', () => {
       this._eventHandlers.cleanUp.forEach((handler) => handler());
-    });
+    }); 
+
   }
 
   showTypesCoffee(coffeeTypes) {

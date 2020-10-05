@@ -28,21 +28,29 @@ export class CoffeeMachine extends Publisher {
     const { dev, interfaces, recipes } = config;
     this._isDev = dev;
     this.isOn = false;
+    this._isFullCup = false;
     this._isClean = true;
     this._isBroken = false;
     this.recipes = recipes;
     this.coffeeTypes = this.recipes.map((r) => r.coffeeName);
     this._wasteAmount = 0;
-    this._ingredientsAvailable = { grain: 100, water: 100, milk: 100 };
+    this._ingredientsAvailable = { grain: 0, water: 100, milk: 100 };
 
     interfaces.forEach((machineInterface) => {
       machineInterface.onEvents({
         switchOn: () => this.pendingSelectCoffee(),
         cleanUp: () => this.clean(),
         coffeeSelected: ({ coffeeName }) => {
-          const coffeeType = this.searchTargetRecipe(coffeeName);
-          this._brewCoffee(coffeeType);
+          if (this._ingredientsAreSufficient()) {
+            const coffeeType = this.searchTargetRecipe(coffeeName);
+            this._brewCoffee(coffeeType);
+          } else {
+            return false
+          }
         },
+        replenishmentOfIngredients: (amount, type) => {
+          this.replenishmentOfIngredients(amount, type)
+        }
       });
 
       machineInterface.setupEvents(this);
@@ -87,6 +95,11 @@ export class CoffeeMachine extends Publisher {
     return true;
   }
 
+  replenishmentOfIngredients(amount, ingredient) {
+    this._ingredientsAvailable[ingredient] = amount;
+    this._emit('replenishmentOfIngredients', this._ingredientsAvailable, amount)
+  }
+
   _prepare(delayMs) {
     this._emit('checking');
 
@@ -105,13 +118,7 @@ export class CoffeeMachine extends Publisher {
   }
 
   pendingSelectCoffee(selectedCoffeeType) {
-    if (this.isOn) {
-      this._emit('ready');
-
-      this._brewCoffee(this.searchTargetRecipe(selectedCoffeeType));
-    } else {
-      this.turnOn();
-    }
+    this.turnOn();
   }
 
   turnOn() {
@@ -149,7 +156,8 @@ export class CoffeeMachine extends Publisher {
   _pourCoffee(colorCoffee) {
     this._emit('pouring', { colorCoffee });
     this._delay(10000).then(() => {
-      this._emit('coffeeReady', this._ingredientsAvailable);
+      this._isFullCup = true;
+      this._emit('coffeeReady', this._ingredientsAvailable, this._isFullCup);
     });
   }
 
