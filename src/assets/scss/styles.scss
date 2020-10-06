@@ -51,6 +51,11 @@ svg {
   &[aria-checked='true'] {
     fill: $busy-mode;
   }
+
+  &[aria-checked='true'] ~ .container,
+  &[aria-checked='true'] ~ .container-inner {
+    cursor: pointer;
+  }
 }
 
 @each $mode, $color in (busy-mode, $busy-mode),

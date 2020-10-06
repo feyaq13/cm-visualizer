@@ -29,15 +29,17 @@ export class CoffeeMachineInterface extends Publisher {
         console.log('кажется нет молока');
         this.stopAnimation('busy');
         this.startAnimation('error');
+        this.fullIn('milk')
       },
       noGrains: () => {
         console.log('нет зерен');
         this.stopAnimation('busy');
         this.startAnimation('error');
+        this.fullIn('grain')
       },
       replenishmentOfIngredients: (ingredientsAvailable, amount) => {
         console.log(`пополняю запасы на ${amount}`)
-        this.stopAnimation('error');
+        // this.stopAnimation('error');
 
         this.showIngredientsAvailable(ingredientsAvailable);
         console.log('я готова делать кофе!');
@@ -46,6 +48,7 @@ export class CoffeeMachineInterface extends Publisher {
         console.log('кажется нет воды');
         this.stopAnimation('busy');
         this.startAnimation('error');
+        this.fullIn('water')
       },
       whipping: () => {
         console.log('взбиваю 🥛...');
@@ -84,6 +87,17 @@ export class CoffeeMachineInterface extends Publisher {
       `);
       },
     });
+  }
+
+  fullIn(containerName) {
+    Array.prototype.find.call(
+      this._ingredientContainers,
+      (container => container.children[1].dataset.containerName === containerName)
+    )
+    .addEventListener('click', () => {
+      const amountOf = prompt('Сколько положить?', '100')
+      this._emit('fulledIn', {amountOf, containerName})
+    })
   }
 
   showIngredientsAvailable(ingredientsAvailable) {
