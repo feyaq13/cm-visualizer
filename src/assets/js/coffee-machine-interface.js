@@ -25,6 +25,7 @@ export class CoffeeMachineInterface extends Publisher {
         console.log('Кофе готов!');
         this.showIngredientsAvailable(ingredientsAvailable);
         this.renderIngredientsAvailable(ingredientsAvailable)
+        this.setupOnMakeCoffeeTypesOnEventClick();
       },
       noMilk: () => {
         console.log('кажется нет молока');
@@ -137,7 +138,7 @@ export class CoffeeMachineInterface extends Publisher {
 
         this._emit('coffeeSelected', { coffeeName: e.target.textContent });
       }
-    });
+    }, {once: true} );
   }
 
   disableAllButtons(e) {
@@ -179,7 +180,7 @@ export class CoffeeMachineInterface extends Publisher {
 
     this._switchOnButton.addEventListener('click', () => {
       this._eventHandlers.switchOn.forEach((handler) => handler());
-    });
+    }, {once: true} );
 
     document.getElementsByClassName('button-clean-waste')[0]
     .addEventListener('click', () => {
