@@ -38,7 +38,7 @@ export class CoffeeMachine extends Publisher {
 
     interfaces.forEach((machineInterface) => {
       machineInterface.onEvents({
-        switchOn: () => this.pendingSelectCoffee(),
+        switchOn: () => this.turnOn(),
         cleanUp: () => this.clean(),
         coffeeSelected: ({ coffeeName }) => {
           if (this._ingredientsAreSufficient()) {
@@ -113,10 +113,6 @@ export class CoffeeMachine extends Publisher {
 
       this._emit('ready');
     });
-  }
-
-  pendingSelectCoffee(selectedCoffeeType) {
-    this.turnOn();
   }
 
   turnOn() {

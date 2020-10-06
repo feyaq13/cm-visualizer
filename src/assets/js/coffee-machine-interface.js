@@ -39,8 +39,7 @@ export class CoffeeMachineInterface extends Publisher {
       },
       replenishmentOfIngredients: (ingredientsAvailable, amount) => {
         console.log(`пополняю запасы на ${amount}`)
-        // this.stopAnimation('error');
-
+        this.stopAnimation('error');
         this.showIngredientsAvailable(ingredientsAvailable);
         console.log('я готова делать кофе!');
       },
@@ -96,6 +95,7 @@ export class CoffeeMachineInterface extends Publisher {
     )
     .addEventListener('click', () => {
       const amountOf = prompt('Сколько положить?', '100')
+      alert(`Пополнение в ${containerName}: ${amountOf}`)
       this._emit('fulledIn', {amountOf, containerName})
     })
   }
