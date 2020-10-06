@@ -131,6 +131,7 @@ export class CoffeeMachineInterface extends Publisher {
   }
 
   stopAnimation(type) {
+    this._switchOnButton.setAttribute('aria-checked', 'true');
     this._switchOnButton.classList.remove(`${type}-mode`);
   }
 
@@ -152,7 +153,7 @@ export class CoffeeMachineInterface extends Publisher {
     document.getElementsByClassName('button-clean-waste')[0]
     .addEventListener('click', () => {
       this._eventHandlers.cleanUp.forEach((handler) => handler());
-    }); 
+    });
 
   }
 
