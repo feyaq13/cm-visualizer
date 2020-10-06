@@ -52,8 +52,7 @@ svg {
     fill: $busy-mode;
   }
 
-  &[aria-checked='true'] ~ .container,
-  &[aria-checked='true'] ~ .container-inner {
+  &[aria-checked='true'] ~ .container {
     cursor: pointer;
   }
 }
@@ -67,7 +66,6 @@ svg {
 
 @mixin flickerMode($mode) {
   @keyframes flicker-#{$mode} {
-    $mode: $mode;
     0% {
       fill: $mode;
     }
