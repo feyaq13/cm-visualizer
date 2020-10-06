@@ -9,7 +9,10 @@ main {
   display: flex;
   justify-content: center;
   align-items: center;
-  align-content: center;
+}
+
+.information {
+  list-style-position: inside;
 }
 
 nav ul {
@@ -18,10 +21,16 @@ nav ul {
 
 .coffee-machine {
   display: flex;
+  justify-content: center;
+
+  @media (max-width: 600px) {
+    flex-wrap: wrap;
+  }
 }
 
 svg {
   max-width: 400px;
+  width: 100%;
   margin: auto;
 }
 
