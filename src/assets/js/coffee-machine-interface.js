@@ -24,18 +24,21 @@ export class CoffeeMachineInterface extends Publisher {
         this.enableAllButtons();
         console.log('Кофе готов!');
         this.showIngredientsAvailable(ingredientsAvailable);
+        this.renderIngredientsAvailable(ingredientsAvailable)
       },
       noMilk: () => {
         console.log('кажется нет молока');
         this.stopAnimation('busy');
         this.startAnimation('error');
         this.fullIn('milk')
+        this.showContainerIsEmpty('milk')
       },
       noGrains: () => {
         console.log('нет зерен');
         this.stopAnimation('busy');
         this.startAnimation('error');
         this.fullIn('grain')
+        this.showContainerIsEmpty('grain')
       },
       replenishmentOfIngredients: (ingredientsAvailable, amount) => {
         console.log(`пополняю запасы на ${amount}`)
@@ -47,6 +50,7 @@ export class CoffeeMachineInterface extends Publisher {
         console.log('кажется нет воды');
         this.stopAnimation('busy');
         this.startAnimation('error');
+        this.showContainerIsEmpty('water')
         this.fullIn('water')
       },
       whipping: () => {
@@ -77,6 +81,7 @@ export class CoffeeMachineInterface extends Publisher {
       welcome: ({ coffeeTypes, ingredientsAvailable }) => {
         this.showTypesCoffee(coffeeTypes);
         this.showIngredientsAvailable(ingredientsAvailable);
+        this.renderIngredientsAvailable(ingredientsAvailable);
         console.log(`
         Добро пожаловать!
         Ознакомьтесь, пожалуйста, с нашим меню:
@@ -88,10 +93,22 @@ export class CoffeeMachineInterface extends Publisher {
     });
   }
 
+  renderIngredientsAvailable(ingredientsAvailable) {
+      Array.prototype.map.call(document.getElementsByClassName('container'),
+        (container) => {
+          for (const name in ingredientsAvailable) {
+            const ingredient = container.getElementsByClassName(`${name}`)[0]
+            if (ingredient) {
+              ingredient.style.clipPath = `polygon(0 ${100 - ingredientsAvailable[name]}%, 100% ${100 - ingredientsAvailable[name]}%, 100% 100%, 0 100%)`
+            }
+          }
+      })
+  }
+
   fullIn(containerName) {
     Array.prototype.find.call(
       this._ingredientContainers,
-      (container => container.children[1].dataset.containerName === containerName)
+      (container => container.children[0].dataset.containerName === containerName)
     )
     .addEventListener('click', () => {
       const amountOf = prompt('Сколько положить?', '100')
@@ -169,6 +186,13 @@ export class CoffeeMachineInterface extends Publisher {
       this._eventHandlers.cleanUp.forEach((handler) => handler());
     });
 
+  }
+
+  showContainerIsEmpty(containerName) {
+    Array.prototype.find.call(
+      document.getElementsByClassName('container-inner'),
+      (container) => container.dataset.containerName === containerName
+    ).classList.add('error-mode');
   }
 
   showTypesCoffee(coffeeTypes) {

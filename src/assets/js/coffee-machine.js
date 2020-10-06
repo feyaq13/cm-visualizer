@@ -34,7 +34,7 @@ export class CoffeeMachine extends Publisher {
     this.recipes = recipes;
     this.coffeeTypes = this.recipes.map((r) => r.coffeeName);
     this._wasteAmount = 0;
-    this._ingredientsAvailable = { grain: 0, water: 20, milk: 0 };
+    this._ingredientsAvailable = { grain: 100, water: 100, milk: 100 };
 
     interfaces.forEach((machineInterface) => {
       machineInterface.onEvents({
