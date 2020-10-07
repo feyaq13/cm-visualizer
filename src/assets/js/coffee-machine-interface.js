@@ -2,11 +2,26 @@ import clickButtonSound from '../sounds/switch-click-button.mp3';
 import pouringCoffeeSound from '../sounds/pouring-coffee.mp3';
 import { Publisher } from './coffee-machine';
 
+class AudioManager extends Audio {
+  constructor(sound) {
+    super(sound)
+    this._sound = new Audio(sound);
+  }
+
+  play() {
+    this._sound.play().finally()
+  }
+
+  stop() {
+    this._sound.pause()
+  }
+}
+
 export class CoffeeMachineInterface extends Publisher {
   constructor() {
     super();
-    this.clickButtonsSound = new Audio(clickButtonSound);
-    this.pouringCoffeeSound = new Audio(pouringCoffeeSound);
+    this.clickButtonsSound = new AudioManager(clickButtonSound);
+    this.pouringCoffeeSound = new AudioManager(pouringCoffeeSound);
     this._buttonElements = document.getElementsByClassName('button');
     this._switchOnButton = Array.prototype.filter.call(this._buttonElements, (button) =>
       button.classList.contains('button_is-switch-on'),
@@ -23,6 +38,7 @@ export class CoffeeMachineInterface extends Publisher {
         this.stopAnimation('busy');
         this.enableAllButtons();
         console.log('Кофе готов!');
+        this.pouringCoffeeSound.stop()
         this.showIngredientsAvailable(ingredientsAvailable);
         this.renderIngredientsAvailable(ingredientsAvailable)
         this.setupOnMakeCoffeeTypesOnEventClick();
@@ -58,8 +74,8 @@ export class CoffeeMachineInterface extends Publisher {
         console.log('взбиваю 🥛...');
       },
       pouring: ({ colorCoffee }) => {
-        this.startPouringDrinkAnimation(40, colorCoffee);
-        this.playSound(this.pouringCoffeeSound);
+        this.startPouringDrinkAnimation(9500, colorCoffee);
+        this.pouringCoffeeSound.play();
       },
       cleaning: () => {
         console.log('очищаю...');
@@ -154,10 +170,6 @@ export class CoffeeMachineInterface extends Publisher {
     );
   }
 
-  playSound(sound) {
-    sound.play();
-  }
-
   startAnimation(type) {
     this._switchOnButton.classList.add(`${type}-mode`);
   }
@@ -175,7 +187,7 @@ export class CoffeeMachineInterface extends Publisher {
 
   setupControlsHandlers() {
     Array.prototype.forEach.call(this._buttonElements, (button) =>
-      button.addEventListener('click', this.playSound.bind(this, this.clickButtonsSound)),
+      button.addEventListener('click', this.clickButtonsSound.play.bind(this.clickButtonsSound)),
     );
 
     this._switchOnButton.addEventListener('click', () => {
