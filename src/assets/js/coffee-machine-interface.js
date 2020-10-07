@@ -1,21 +1,7 @@
-import clickButtonSound from '../sounds/switch-click-button.mp3';
+import { AudioManager } from './audio-manager';
 import pouringCoffeeSound from '../sounds/pouring-coffee.mp3';
+import clickButtonSound from '../sounds/switch-click-button.mp3';
 import { Publisher } from './coffee-machine';
-
-class AudioManager extends Audio {
-  constructor(sound) {
-    super(sound)
-    this._sound = new Audio(sound);
-  }
-
-  play() {
-    this._sound.play().finally()
-  }
-
-  stop() {
-    this._sound.pause()
-  }
-}
 
 export class CoffeeMachineInterface extends Publisher {
   constructor() {
