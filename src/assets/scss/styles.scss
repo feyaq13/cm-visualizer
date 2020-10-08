@@ -42,12 +42,16 @@ svg {
     fill: darkgrey;
     transform-box: fill-box;
     transform-origin: center;
-    transform: scale(.95);
+    transform: scale(1.2);
     box-shadow: 0 50px rgba(17, 0, 0, 0);
   }
 }
 
 .button_is-switch-on {
+  transform: scale(1.5);
+  transform-origin: center;
+  transform-box: fill-box;
+
   &[aria-checked='true'] {
     fill: $busy-mode;
   }
