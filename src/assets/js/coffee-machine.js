@@ -120,7 +120,7 @@ export class CoffeeMachine extends Publisher {
         return;
       }
 
-      this._emit('ready');
+      this._emit('ready', this.coffeeTypes);
     });
   }
 

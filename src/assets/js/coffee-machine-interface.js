@@ -67,7 +67,8 @@ export class CoffeeMachineInterface extends Publisher {
       clear: () => {
         console.log('очистил 🧹');
       },
-      ready: () => {
+      ready: (coffeeTypes) => {
+        this.showTypesCoffee(coffeeTypes);
         this.stopAnimation('busy');
         this.setupOnMakeCoffeeTypesOnEventClick((coffeeType) => coffeeType);
         console.log('я готова делать кофе!');
@@ -83,9 +84,8 @@ export class CoffeeMachineInterface extends Publisher {
         console.log(`завариваю ${coffeeType.coffeeName}`);
       },
       welcome: ({ coffeeTypes, ingredientsAvailable }) => {
-        this.showTypesCoffee(coffeeTypes);
-        this.showIngredientsAvailable(ingredientsAvailable);
         this.renderIngredientsAvailable(ingredientsAvailable);
+        this.showIngredientsAvailable(ingredientsAvailable);
         console.log(`
         Добро пожаловать!
         Ознакомьтесь, пожалуйста, с нашим меню:
