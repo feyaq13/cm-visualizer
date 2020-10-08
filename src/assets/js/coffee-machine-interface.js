@@ -24,7 +24,8 @@ export class CoffeeMachineInterface extends Publisher {
         this.stopAnimation('busy');
         this.enableAllButtons();
         console.log('Кофе готов!');
-        this.pouringCoffeeSound.stop()
+        this.pouringCoffeeSound.stop();
+        this._emit('fullCup')
         this.showIngredientsAvailable(ingredientsAvailable);
         this.renderIngredientsAvailable(ingredientsAvailable)
         this.setupOnMakeCoffeeTypesOnEventClick();
@@ -74,8 +75,11 @@ export class CoffeeMachineInterface extends Publisher {
         this.setupOnMakeCoffeeTypesOnEventClick((coffeeType) => coffeeType);
         console.log('я готова делать кофе!');
       },
-      checking: () => {
+      checking: (isFullCup) => {
         console.log('проверяю...');
+        if (isFullCup) {
+          this._cupElement.classList.remove('pouring-mode');
+        }
         this.startAnimation('busy');
       },
       brewing: ({ coffeeType }) => {

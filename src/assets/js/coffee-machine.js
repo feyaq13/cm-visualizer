@@ -38,9 +38,15 @@ export class CoffeeMachine extends Publisher {
 
     interfaces.forEach((machineInterface) => {
       machineInterface.onEvents({
-        switchOn: () => this.turnOn(),
+        switchOn: () => this._turnOn(),
         cleanUp: () => this.clean(),
         coffeeSelected: ({ coffeeName }) => {
+          if (this._isFullCup) {
+            debugger
+            this._emit('checking', this._isFullCup);
+            this._isFullCup = false;
+          }
+
           if (this._ingredientsAreSufficient()) {
             const coffeeType = this.searchTargetRecipe(coffeeName);
             this._brewCoffee(coffeeType);
@@ -51,6 +57,9 @@ export class CoffeeMachine extends Publisher {
         fulledIn: ({amountOf, containerName}) => {
           this._replenishmentOfIngredients(amountOf, containerName)
         },
+        fullCup: () => {
+          this._isFullCup = true;
+        }
       });
 
       machineInterface.setupEvents(this);
@@ -115,7 +124,7 @@ export class CoffeeMachine extends Publisher {
     });
   }
 
-  turnOn() {
+  _turnOn() {
     this.isOn = true;
     this._prepare(1000);
   }
@@ -150,8 +159,7 @@ export class CoffeeMachine extends Publisher {
   _pourCoffee(colorCoffee) {
     this._emit('pouring', { colorCoffee });
     this._delay(10000).then(() => {
-      this._isFullCup = true;
-      this._emit('coffeeReady', this._ingredientsAvailable, this._isFullCup);
+      this._emit('coffeeReady', this._ingredientsAvailable);
     });
   }
 
