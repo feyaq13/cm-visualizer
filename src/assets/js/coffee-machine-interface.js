@@ -1,13 +1,10 @@
 import { AudioManager } from './audio-manager';
-import pouringCoffeeSound from '../sounds/pouring-coffee.mp3';
-import clickButtonSound from '../sounds/switch-click-button.mp3';
 import { Publisher } from './coffee-machine';
 
 export class CoffeeMachineInterface extends Publisher {
   constructor() {
     super();
-    this.clickButtonsSound = new AudioManager(clickButtonSound);
-    this.pouringCoffeeSound = new AudioManager(pouringCoffeeSound);
+    this._audioManager = new AudioManager()
     this._buttonElements = document.getElementsByClassName('button');
     this._switchOnButton = Array.prototype.filter.call(this._buttonElements, (button) =>
       button.classList.contains('button_is-switch-on'),
@@ -24,7 +21,7 @@ export class CoffeeMachineInterface extends Publisher {
         this.stopAnimation('busy');
         this.enableAllButtons();
         console.log('Кофе готов!');
-        this.pouringCoffeeSound.stop();
+        this._audioManager.stop('pouringCoffeeSound')
         this._emit('fullCup')
         this.showIngredientsAvailable(ingredientsAvailable);
         this.renderIngredientsAvailable(ingredientsAvailable)
@@ -62,7 +59,7 @@ export class CoffeeMachineInterface extends Publisher {
       },
       pouring: ({ colorCoffee }) => {
         this.startPouringDrinkAnimation(9500, colorCoffee);
-        this.pouringCoffeeSound.play();
+        this._audioManager.play('pouringCoffeeSound')
       },
       cleaning: () => {
         console.log('очищаю...');
@@ -93,7 +90,7 @@ export class CoffeeMachineInterface extends Publisher {
         Добро пожаловать!
         Ознакомьтесь, пожалуйста, с нашим меню:
         ${coffeeTypes.join(', ')}
-        Для выбора напитка просто напишите его название.
+        Для выбора напитка просто выберете его в панели навигации.
         Приятного аппетита!
       `);
       },
@@ -177,18 +174,15 @@ export class CoffeeMachineInterface extends Publisher {
 
   setupControlsHandlers() {
     Array.prototype.forEach.call(this._buttonElements, (button) =>
-      button.addEventListener('click', this.clickButtonsSound.play.bind(this.clickButtonsSound)),
+      button.addEventListener('click', this._audioManager.play.bind(this._audioManager, 'clickButtonsSound'))
     );
 
-    this._switchOnButton.addEventListener('click', () => {
-      this._eventHandlers.switchOn.forEach((handler) => handler());
-    }, {once: true} );
+    this._switchOnButton.addEventListener('click', () =>
+      this._eventHandlers.switchOn.forEach((handler) => handler()), {once: true} );
 
     document.getElementsByClassName('button-clean-waste')[0]
-    .addEventListener('click', () => {
-      this._eventHandlers.cleanUp.forEach((handler) => handler());
-    });
-
+    .addEventListener('click',
+      () => this._eventHandlers.cleanUp.forEach((handler) => handler()));
   }
 
   showContainerIsEmpty(containerName) {
@@ -199,8 +193,8 @@ export class CoffeeMachineInterface extends Publisher {
   }
 
   showTypesCoffee(coffeeTypes) {
-    if (document.getElementsByClassName('coffee-list')[0].childElementCount === 0) {
-      const coffeeListElement = document.getElementsByClassName('coffee-list')[0];
+    if (this._buttonElementsNav.childElementCount === 0) {
+      const coffeeListElement = this._buttonElementsNav;
 
       coffeeTypes.forEach((coffeeName) => {
         const buttonElement = document.createElement('button');
