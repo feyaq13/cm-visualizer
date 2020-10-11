@@ -12,5 +12,8 @@
   },
   "browserslist": [
     "last 1 Chrome version"
-  ]
+  ],
+  "dependencies": {
+    "sounds": "^1.0.2"
+  }
 }

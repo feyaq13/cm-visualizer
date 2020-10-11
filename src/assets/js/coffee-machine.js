@@ -84,17 +84,17 @@ export class CoffeeMachine extends Publisher {
 
   _ingredientsAreSufficient() {
     let emptyContainers = [];
-    if (this._ingredientsAvailable.grain <= 0) {
+    if (this._ingredientsAvailable.grain <= 20) {
       emptyContainers.push(this._ingredientsAvailable.grain)
       this._emit('noGrains');
     }
 
-    if (this._ingredientsAvailable.water <= 0) {
+    if (this._ingredientsAvailable.water <= 20) {
       emptyContainers.push(this._ingredientsAvailable.water)
       this._emit('noWater');
     }
 
-    if (this._ingredientsAvailable.milk <= 0) {
+    if (this._ingredientsAvailable.milk <= 20) {
       emptyContainers.push(this._ingredientsAvailable.milk)
       this._emit('noMilk');
     }
@@ -104,7 +104,7 @@ export class CoffeeMachine extends Publisher {
 
   _replenishmentOfIngredients(amount, ingredient) {
     this._ingredientsAvailable[ingredient] = Number(amount);
-    this._emit('replenishmentOfIngredients', this._ingredientsAvailable, amount)
+    this._emit('replenishmentOfIngredients', {amount, ingredientsAvailable: this._ingredientsAvailable})
   }
 
   _prepare(delayMs) {

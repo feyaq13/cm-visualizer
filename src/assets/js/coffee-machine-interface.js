@@ -41,10 +41,11 @@ export class CoffeeMachineInterface extends Publisher {
         this.fullIn('grain')
         this.showContainerIsEmpty('grain')
       },
-      replenishmentOfIngredients: (ingredientsAvailable, amount) => {
-        console.log(`пополняю запасы на ${amount}`)
+      replenishmentOfIngredients: (data) => {
+        console.log(`пополняю запасы на ${data.amount}`)
         this.stopAnimation('error');
-        this.showIngredientsAvailable(ingredientsAvailable);
+        this.showIngredientsAvailable(data.ingredientsAvailable);
+        this.renderIngredientsAvailable(data.ingredientsAvailable)
         console.log('я готова делать кофе!');
       },
       noWater: () => {
@@ -117,7 +118,7 @@ export class CoffeeMachineInterface extends Publisher {
     .addEventListener('click', () => {
       const amountOf = prompt('Сколько положить?', '100')
       alert(`Пополнение в ${containerName}: ${amountOf}`)
-      this._emit('fulledIn', {amountOf, containerName})
+      this._emit('fulledIn', {containerName, amountOf})
     })
   }
 
