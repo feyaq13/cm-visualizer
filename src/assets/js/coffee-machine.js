@@ -54,8 +54,11 @@ export class CoffeeMachine extends Publisher {
             return false
           }
         },
-        fulledIn: ({amountOf, containerName}) => {
+        fulling: ({amountOf, containerName}) => {
           this._replenishmentOfIngredients(amountOf, containerName)
+        },
+        fulled: () => {
+          this._getCoffeeTypes(this.coffeeTypes)
         },
         fullCup: () => {
           this._isFullCup = true;
@@ -105,6 +108,10 @@ export class CoffeeMachine extends Publisher {
   _replenishmentOfIngredients(amount, ingredient) {
     this._ingredientsAvailable[ingredient] = Number(amount);
     this._emit('replenishmentOfIngredients', {amount, ingredientsAvailable: this._ingredientsAvailable})
+  }
+
+  _getCoffeeTypes(coffeeTypes) {
+    this._emit('returnCoffeeTypes', coffeeTypes)
   }
 
   _prepare(delayMs) {

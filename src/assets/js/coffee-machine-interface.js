@@ -31,21 +31,28 @@ export class CoffeeMachineInterface extends Publisher {
         console.log('кажется нет молока');
         this.stopAnimation('busy');
         this.startAnimation('error');
-        this.fullIn('milk')
+        this.fulling('milk')
         this.showContainerIsEmpty('milk')
       },
       noGrains: () => {
         console.log('нет зерен');
         this.stopAnimation('busy');
         this.startAnimation('error');
-        this.fullIn('grain')
+        this.fulling('grain')
         this.showContainerIsEmpty('grain')
       },
       replenishmentOfIngredients: (data) => {
         console.log(`пополняю запасы на ${data.amount}`)
-        this.stopAnimation('error');
+        if (Object.values(data.ingredientsAvailable).every(ingredientAmount => ingredientAmount > 50)) {
+          this.stopAnimation('error');
+          this._emit('fulled')
+        }
         this.showIngredientsAvailable(data.ingredientsAvailable);
         this.renderIngredientsAvailable(data.ingredientsAvailable)
+      },
+      returnCoffeeTypes: (coffeeTypes) => {
+        this.showTypesCoffee(coffeeTypes)
+        this.setupOnMakeCoffeeTypesOnEventClick((coffeeType) => coffeeType);
         console.log('я готова делать кофе!');
       },
       noWater: () => {
@@ -53,7 +60,7 @@ export class CoffeeMachineInterface extends Publisher {
         this.stopAnimation('busy');
         this.startAnimation('error');
         this.showContainerIsEmpty('water')
-        this.fullIn('water')
+        this.fulling('water')
       },
       whipping: () => {
         console.log('взбиваю 🥛...');
@@ -110,16 +117,20 @@ export class CoffeeMachineInterface extends Publisher {
       })
   }
 
-  fullIn(containerName) {
+  fulling(containerName) {
     Array.prototype.find.call(
       this._ingredientContainers,
       (container => container.children[0].dataset.containerName === containerName)
     )
     .addEventListener('click', () => {
-      const amountOf = prompt('Сколько положить?', '100')
+      let amountOf = prompt('Сколько положить?', '100')
+      if (amountOf > 100 || amountOf === null) {
+        amountOf = 100;
+      }
+
       alert(`Пополнение в ${containerName}: ${amountOf}`)
-      this._emit('fulledIn', {containerName, amountOf})
-    })
+      this._emit('fulling', {containerName, amountOf})
+    }, {once: true})
   }
 
   showIngredientsAvailable(ingredientsAvailable) {
