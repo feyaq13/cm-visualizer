@@ -42,7 +42,6 @@ export class CoffeeMachine extends Publisher {
         cleanUp: () => this.clean(),
         coffeeSelected: ({ coffeeName }) => {
           if (this._isFullCup) {
-            debugger
             this._emit('checking', this._isFullCup);
             this._isFullCup = false;
           }

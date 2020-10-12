@@ -48,13 +48,13 @@ export class CoffeeMachineInterface extends Publisher {
         this.fulling('grain');
       },
       replenishmentOfIngredients: (data) => {
-        if (Object.values(data.ingredientsAvailable).every(ingredientAmount => ingredientAmount > 50)) {
+        if (Object.values(data.ingredientsAvailable).every(ingredientAmount => ingredientAmount > 30)) {
           this.stopAnimation('error');
-          this._emit('fulled')
         }
 
         this.showIngredientsAvailable(data.ingredientsAvailable);
         this.renderIngredientsAvailable(data.ingredientsAvailable)
+        this._emit('fulled')
       },
       returnCoffeeTypes: (coffeeTypes) => {
         this.showTypesCoffee(coffeeTypes)
@@ -135,10 +135,11 @@ export class CoffeeMachineInterface extends Publisher {
         amountOf = 100;
       }
 
-      this.showContainerStatus(containerName)
-      this._audioManager.play('fillingContainerSound')
-
+      this.showContainerStatus(containerName);
+      this.stopAnimation('error');
+      this._audioManager.play('fillingContainerSound');
       // alert(`Пополнение в ${containerName}: ${amountOf}`)
+      debugger
       this._emit('fulling', {containerName, amountOf})
     }, {once: true})
   }
