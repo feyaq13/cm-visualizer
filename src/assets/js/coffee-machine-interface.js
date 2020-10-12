@@ -113,7 +113,7 @@ export class CoffeeMachineInterface extends Publisher {
   renderIngredientsAvailable(ingredientsAvailable) {
       Array.prototype.map.call(document.getElementsByClassName('container'),
         (container) => {
-          for (const name in ingredientsAvailable) {
+          for (const name of Reflect.ownKeys(ingredientsAvailable)) {
             const ingredient = container.getElementsByClassName(`${name}`)[0]
             if (ingredient) {
               ingredient.style.clipPath = `polygon(0 ${100 - ingredientsAvailable[name]}%, 100% ${100 - ingredientsAvailable[name]}%, 100% 100%, 0 100%)`
