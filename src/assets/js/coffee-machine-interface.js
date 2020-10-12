@@ -1,8 +1,9 @@
+import { Hints } from './coffee-machine-hints';
 import { AudioManager } from './audio-manager';
 import { Publisher } from './coffee-machine';
 
 export class CoffeeMachineInterface extends Publisher {
-  constructor() {
+  constructor(hints) {
     super();
     this._audioManager = new AudioManager();
     this._buttonElements = document.getElementsByClassName('button');
@@ -12,6 +13,10 @@ export class CoffeeMachineInterface extends Publisher {
     this._ingredientContainers = document.getElementsByClassName('container');
     this._buttonElementsNav = document.getElementsByClassName('coffee-list')[0];
     this._cupElement = document.getElementsByClassName('coffee-cup')[0];
+    this._cupElementFactor = document.getElementsByClassName('coffee-cup-factor')[0];
+    this._hinter = typeof hints === 'undefined' ? null : new Hints(
+      [this._switchOnButton, ...this._ingredientContainers, this._cupElementFactor]
+    );
     this.setupControlsHandlers();
   }
 

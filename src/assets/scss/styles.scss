@@ -5,10 +5,45 @@ html, body, main {
   height: 100%;
 }
 
+body {
+  margin: 0;
+}
+
+.hints-mode {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    left: 0;
+    opacity: .85;
+    background: #262626;
+  }
+
+  & .coffee-machine-design {
+    z-index: 1;
+    height: 100%;
+    max-width: 70vh;
+    position: absolute;
+    top: 0;
+  }
+
+}
+
+use {
+  position: relative;
+  z-index: 1;
+}
+
 main {
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 30px;
+  box-sizing: border-box;
 }
 
 .information {
@@ -23,15 +58,32 @@ nav ul {
   display: flex;
   justify-content: center;
 
-  @media (max-width: 600px) {
+  @media (max-width: 680px) {
     flex-wrap: wrap;
+  }
+
+  &-design {
+    max-width: 400px;
+    width: 100%;
   }
 }
 
-svg {
-  max-width: 400px;
-  width: 100%;
-  margin: auto;
+body:not(.hints-mode) {
+  .coffee-machine-design {
+    max-height: 400px;
+  }
+}
+
+.container-inner {
+  fill: oldlace;
+}
+
+.selected {
+  opacity: 1;
+  stroke: red;
+  fill-opacity: 1;
+  stroke-opacity: 1;
+  stroke-width: 1;
 }
 
 .button {
