@@ -25,6 +25,7 @@ export class CoffeeMachineInterface extends Publisher {
       coffeeReady: (ingredientsAvailable) => {
         this.stopAnimation('busy');
         this.enableAllButtons();
+        this._audioManager.stop('grindCoffeeBeansSound');
         console.log('Кофе готов!');
         this._audioManager.stop('pouringCoffeeSound')
         this._emit('fullCup')
@@ -36,22 +37,22 @@ export class CoffeeMachineInterface extends Publisher {
         console.log('кажется нет молока');
         this.stopAnimation('busy');
         this.startAnimation('error');
-        this.fulling('milk')
-        this.showContainerIsEmpty('milk')
+        this.showContainerStatus('milk');
+        this.fulling('milk');
       },
       noGrains: () => {
         console.log('нет зерен');
         this.stopAnimation('busy');
         this.startAnimation('error');
-        this.fulling('grain')
-        this.showContainerIsEmpty('grain')
+        this.showContainerStatus('grain');
+        this.fulling('grain');
       },
       replenishmentOfIngredients: (data) => {
-        console.log(`пополняю запасы на ${data.amount}`)
         if (Object.values(data.ingredientsAvailable).every(ingredientAmount => ingredientAmount > 50)) {
           this.stopAnimation('error');
           this._emit('fulled')
         }
+
         this.showIngredientsAvailable(data.ingredientsAvailable);
         this.renderIngredientsAvailable(data.ingredientsAvailable)
       },
@@ -64,7 +65,7 @@ export class CoffeeMachineInterface extends Publisher {
         console.log('кажется нет воды');
         this.stopAnimation('busy');
         this.startAnimation('error');
-        this.showContainerIsEmpty('water')
+        this.showContainerStatus('water')
         this.fulling('water')
       },
       whipping: () => {
@@ -94,6 +95,7 @@ export class CoffeeMachineInterface extends Publisher {
         this.startAnimation('busy');
       },
       brewing: ({ coffeeType }) => {
+        this._audioManager.play('grindCoffeeBeansSound')
         console.log(`завариваю ${coffeeType.coffeeName}`);
       },
       welcome: ({ coffeeTypes, ingredientsAvailable }) => {
@@ -133,7 +135,10 @@ export class CoffeeMachineInterface extends Publisher {
         amountOf = 100;
       }
 
-      alert(`Пополнение в ${containerName}: ${amountOf}`)
+      this.showContainerStatus(containerName)
+      this._audioManager.play('fillingContainerSound')
+
+      // alert(`Пополнение в ${containerName}: ${amountOf}`)
       this._emit('fulling', {containerName, amountOf})
     }, {once: true})
   }
@@ -202,11 +207,13 @@ export class CoffeeMachineInterface extends Publisher {
       () => this._eventHandlers.cleanUp.forEach((handler) => handler()));
   }
 
-  showContainerIsEmpty(containerName) {
-    Array.prototype.find.call(
+  showContainerStatus(containerName) {
+    const targetContainer = Array.prototype.find.call(
       document.getElementsByClassName('container-inner'),
       (container) => container.dataset.containerName === containerName
-    ).classList.add('error-mode');
+    )
+
+    targetContainer.classList.toggle('error-mode');
   }
 
   showTypesCoffee(coffeeTypes) {
