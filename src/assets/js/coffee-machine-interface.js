@@ -28,7 +28,7 @@ export class CoffeeMachineInterface extends Publisher {
         this._audioManager.stop('grindCoffeeBeansSound');
         console.log('Кофе готов!');
         this._audioManager.stop('pouringCoffeeSound')
-        this._emit('fullCup')
+        this._emit('filledCup')
         this.showIngredientsAvailable(ingredientsAvailable);
         this.renderIngredientsAvailable(ingredientsAvailable)
         this.setupOnMakeCoffeeTypesOnEventClick();
@@ -38,19 +38,19 @@ export class CoffeeMachineInterface extends Publisher {
         this.stopAnimation('busy');
         this.startAnimation('error');
         this.showContainerStatus('milk');
-        this.fulling('milk');
+        this.fillContainer('milk');
       },
       noGrains: () => {
         console.log('нет зерен');
         this.stopAnimation('busy');
         this.startAnimation('error');
         this.showContainerStatus('grain');
-        this.fulling('grain');
+        this.fillContainer('grain');
       },
       replenishmentOfIngredients: (data) => {
         if (Object.values(data.ingredientsAvailable).every(ingredientAmount => ingredientAmount > 10)) {
           this.stopAnimation('error');
-          this._emit('fulled')
+          this._emit('filledAllContainers')
         }
 
         this.showIngredientsAvailable(data.ingredientsAvailable);
@@ -66,7 +66,7 @@ export class CoffeeMachineInterface extends Publisher {
         this.stopAnimation('busy');
         this.startAnimation('error');
         this.showContainerStatus('water')
-        this.fulling('water')
+        this.fillContainer('water')
       },
       whipping: () => {
         console.log('взбиваю 🥛...');
@@ -87,9 +87,9 @@ export class CoffeeMachineInterface extends Publisher {
         this.setupOnMakeCoffeeTypesOnEventClick((coffeeType) => coffeeType);
         console.log('я готова делать кофе!');
       },
-      checking: (isFullCup) => {
+      checking: (cupIsFull) => {
         console.log('проверяю...');
-        if (isFullCup) {
+        if (cupIsFull) {
           this._cupElement.classList.remove('pouring-mode');
         }
         this.startAnimation('busy');
@@ -113,18 +113,18 @@ export class CoffeeMachineInterface extends Publisher {
   }
 
   renderIngredientsAvailable(ingredientsAvailable) {
-      Array.prototype.map.call(document.getElementsByClassName('container'),
-        (container) => {
-          for (const name of Reflect.ownKeys(ingredientsAvailable)) {
-            const ingredient = container.getElementsByClassName(`${name}`)[0]
-            if (ingredient) {
-              ingredient.style.clipPath = `polygon(0 ${100 - ingredientsAvailable[name]}%, 100% ${100 - ingredientsAvailable[name]}%, 100% 100%, 0 100%)`
-            }
+    Array.prototype.map.call(document.getElementsByClassName('container'),
+      (container) => {
+        for (const name of Reflect.ownKeys(ingredientsAvailable)) {
+          const ingredient = container.getElementsByClassName(`${name}`)[0]
+          if (ingredient) {
+            ingredient.style.clipPath = `polygon(0 ${100 - ingredientsAvailable[name]}%, 100% ${100 - ingredientsAvailable[name]}%, 100% 100%, 0 100%)`
           }
-      })
+        }
+    })
   }
 
-  fulling(containerName) {
+  fillContainer(containerName) {
     Array.prototype.find.call(
       this._ingredientContainers,
       (container => container.children[0].dataset.containerName === containerName)
@@ -138,7 +138,7 @@ export class CoffeeMachineInterface extends Publisher {
       this.showContainerStatus(containerName);
       this._audioManager.play('fillingContainerSound');
       // alert(`Пополнение в ${containerName}: ${amountOf}`)
-      this._emit('fulling', {containerName, amountOf})
+      this._emit('fillingContainer', {containerName, amountOf})
     })
   }
 
@@ -155,14 +155,16 @@ export class CoffeeMachineInterface extends Publisher {
   }
 
   setupOnMakeCoffeeTypesOnEventClick() {
+    const option = { once: false }
     this._buttonElementsNav.addEventListener('click', (e) => {
       if (e.target.type === 'button') {
         this.startAnimation('busy');
         this.disableAllButtons(e);
+        option.once = true;
 
         this._emit('coffeeSelected', { coffeeName: e.target.textContent });
       }
-    }, {once: true} );
+    }, option);
   }
 
   disableAllButtons(e) {

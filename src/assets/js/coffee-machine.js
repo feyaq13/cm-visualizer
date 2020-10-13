@@ -28,7 +28,7 @@ export class CoffeeMachine extends Publisher {
     const { dev, interfaces, recipes } = config;
     this._isDev = dev;
     this.isOn = false;
-    this._isFullCup = false;
+    this._cupIsFull = false;
     this._isClean = true;
     this._isBroken = false;
     this.recipes = recipes;
@@ -41,9 +41,9 @@ export class CoffeeMachine extends Publisher {
         switchOn: () => this._turnOn(),
         cleanUp: () => this.clean(),
         coffeeSelected: ({ coffeeName }) => {
-          if (this._isFullCup) {
-            this._emit('checking', this._isFullCup);
-            this._isFullCup = false;
+          if (this._cupIsFull) {
+            this._emit('checking', this._cupIsFull);
+            this._cupIsFull = false;
           }
 
           if (this._ingredientsAreSufficient()) {
@@ -53,14 +53,14 @@ export class CoffeeMachine extends Publisher {
             return false
           }
         },
-        fulling: ({amountOf, containerName}) => {
+        fillingContainer: ({amountOf, containerName}) => {
           this._replenishmentOfIngredients(amountOf, containerName)
         },
-        fulled: () => {
+        filledAllContainers: () => {
           this._getCoffeeTypes(this.coffeeTypes)
         },
-        fullCup: () => {
-          this._isFullCup = true;
+        filledCup: () => {
+          this._cupIsFull = true;
         }
       });
 
