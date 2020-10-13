@@ -5,7 +5,7 @@ import { Publisher } from './coffee-machine';
 export class CoffeeMachineInterface extends Publisher {
   constructor(hints) {
     super();
-    this._audioManager = new AudioManager();
+    this._audioManager = new AudioManager({ volume: 0.5 });
     this._buttonElements = document.getElementsByClassName('button');
     this._switchOnButton = Array.prototype.filter.call(this._buttonElements, (button) =>
       button.classList.contains('button_is-switch-on'),

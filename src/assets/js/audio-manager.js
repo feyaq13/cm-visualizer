@@ -4,8 +4,10 @@ import fillingContainerSound from '../sounds/fulling-sound.mp3';
 import grindCoffeeBeansSound from '../sounds/grinder-sound.mp3'
 
 export class AudioManager {
-  constructor() {
+  constructor(config) {
     this._sound = null;
+    const { volume } = config;
+    this._config = config;
     this.clickButtonsSound = new Audio(clickButtonSound);
     this.pouringCoffeeSound = new Audio(pouringCoffeeSound);
     this.fillingContainerSound = new Audio(fillingContainerSound);
@@ -27,6 +29,8 @@ export class AudioManager {
         this._sound = this.grindCoffeeBeansSound
         break
     }
+
+    this._sound.volume = this._config.volume;
     this._sound.play().finally();
   }
 
