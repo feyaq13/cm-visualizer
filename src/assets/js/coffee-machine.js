@@ -34,7 +34,7 @@ export class CoffeeMachine extends Publisher {
     this.recipes = recipes;
     this.coffeeTypes = this.recipes.map((r) => r.coffeeName);
     this._wasteAmount = 0;
-    this._ingredientsAvailable = { grain: 10, water: 10, milk: 10 };
+    this._ingredientsAvailable = { grain: 100, water: 100, milk: 100 };
 
     interfaces.forEach((machineInterface) => {
       machineInterface.onEvents({
@@ -100,13 +100,20 @@ export class CoffeeMachine extends Publisher {
       emptyContainers.push(this._ingredientsAvailable.milk)
       this._emit('noMilk');
     }
-    // debugger
 
     return !emptyContainers.length
   }
 
   _replenishmentOfIngredients(amount, ingredient) {
-    this._ingredientsAvailable[ingredient] += Number(amount);
+    if (this._ingredientsAvailable[ingredient] + amount < 100 ) {
+      this._ingredientsAvailable[ingredient] += amount;
+    } else if (isNaN(amount)) {
+      this._ingredientsAvailable[ingredient] = 100;
+    } else {
+      amount -= this._ingredientsAvailable[ingredient];
+      this._ingredientsAvailable[ingredient] += amount;
+    }
+
     this._emit('replenishmentOfIngredients', {amount, ingredientsAvailable: this._ingredientsAvailable})
   }
 

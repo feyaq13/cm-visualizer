@@ -48,12 +48,9 @@ export class CoffeeMachineInterface extends Publisher {
         this.fulling('grain');
       },
       replenishmentOfIngredients: (data) => {
-        debugger
         if (Object.values(data.ingredientsAvailable).every(ingredientAmount => ingredientAmount > 10)) {
           this.stopAnimation('error');
           this._emit('fulled')
-        } else {
-          // this.fulling();
         }
 
         this.showIngredientsAvailable(data.ingredientsAvailable);
