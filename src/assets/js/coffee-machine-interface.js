@@ -48,18 +48,21 @@ export class CoffeeMachineInterface extends Publisher {
         this.fulling('grain');
       },
       replenishmentOfIngredients: (data) => {
-        if (Object.values(data.ingredientsAvailable).every(ingredientAmount => ingredientAmount > 30)) {
+        debugger
+        if (Object.values(data.ingredientsAvailable).every(ingredientAmount => ingredientAmount > 10)) {
           this.stopAnimation('error');
+          this._emit('fulled')
+        } else {
+          // this.fulling();
         }
 
         this.showIngredientsAvailable(data.ingredientsAvailable);
         this.renderIngredientsAvailable(data.ingredientsAvailable)
-        this._emit('fulled')
       },
       returnCoffeeTypes: (coffeeTypes) => {
         this.showTypesCoffee(coffeeTypes)
         this.setupOnMakeCoffeeTypesOnEventClick((coffeeType) => coffeeType);
-        console.log('я готова делать кофе!');
+        this.enableAllButtons()
       },
       noWater: () => {
         console.log('кажется нет воды');
@@ -136,12 +139,10 @@ export class CoffeeMachineInterface extends Publisher {
       }
 
       this.showContainerStatus(containerName);
-      this.stopAnimation('error');
       this._audioManager.play('fillingContainerSound');
       // alert(`Пополнение в ${containerName}: ${amountOf}`)
-      debugger
       this._emit('fulling', {containerName, amountOf})
-    }, {once: true})
+    })
   }
 
   showIngredientsAvailable(ingredientsAvailable) {
