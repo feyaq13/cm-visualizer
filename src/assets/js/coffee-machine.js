@@ -130,9 +130,7 @@ export class CoffeeMachine extends Publisher {
         this.clean();
       }
 
-      if (!this._ingredientsAreSufficient()) {
-        return false;
-      } else {
+      if (this._ingredientsAreSufficient()) {
         this._emit('ready', this.coffeeTypes);
       }
     });
