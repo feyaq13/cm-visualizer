@@ -21,6 +21,12 @@ class turnOn extends CoffeeMachineState {
   }
 }
 
+class Idle extends CoffeeMachineState {
+  constructor() {
+    super('Idle', Prepare);
+  }
+}
+
 class Prepare extends CoffeeMachineState {
   constructor() {
     super('prepare', Ready);
@@ -47,7 +53,7 @@ class WhipMilk extends CoffeeMachineState {
 
 class BrewCoffee extends CoffeeMachineState {
   constructor() {
-    super('brewCoffee', turnOn);
+    super('brewCoffee', Idle);
   }
 }
 
@@ -84,9 +90,8 @@ class CoffeeMachine {
   on() {
     if (this.state.name === 'off') {
       this.nextState()
-      console.log(this.state)
+      this.showState(this.state)
       this.goTo(new Prepare())
-      // console.log(this.state)
       this._on = true;
     }
   }
@@ -100,7 +105,7 @@ class CoffeeMachine {
   }
 
   checking() {
-    if (this.state.name === 'ready') {
+    if (this.state.name === 'ready' || this.state.name === 'turnOn') {
       this.nextState()
       return
     }
@@ -108,7 +113,7 @@ class CoffeeMachine {
     if (this._wasteAmount !== 100) {
       console.log('prepared - ok')
       this.nextState()
-      console.log(this.state)
+      this.showState(this.state)
     }
 
   }
@@ -117,40 +122,48 @@ class CoffeeMachine {
     return this.recipes.find(recipe => recipe.coffeeName === coffeeType)
   }
 
-  makeCoffee(coffeeType) {
-    if (this.state.name !== 'ready') {
-      this.checking()
-      this.nextState()
-      console.log(this.state)
-    }
-
-    if (this.state.name === 'coffeeSelected' || this.state.name === 'ready') {
-      this.nextState()
-
-      coffeeType = this.searchCoffeeType(coffeeType)
-
-      try {
-        if (!coffeeType.recipe.withMilk) {
-          this.nextState()
-        } else {
-          console.log(this.state)
-          this.nextState()
-          console.log(`взбиваю молоко`)
-        }
-        console.log(this.state)
-        console.log(`завариваю ${coffeeType.coffeeName}`)
-      } catch (e) {
-        console.error(new Error(`coffeeType is ${coffeeType}`))
+  makeCoffee(coffeeName) {
+    if (this._on) {
+      if (this.state.name !== 'ready') {
+        this.showState(this.state)
+        this.checking()
+        this.nextState()
       }
 
-    }
+      if (this.state.name === 'coffeeSelected' || this.state.name === 'ready') {
+        this.nextState()
 
-    this.finally()
+        const coffeeType = this.searchCoffeeType(coffeeName)
+
+        try {
+          if (!coffeeType.recipe.withMilk) {
+            this.nextState()
+          } else {
+            this.showState(this.state)
+            this.nextState()
+            console.log(`взбиваю молоко`)
+          }
+          this.showState(this.state)
+          console.log(`завариваю ${coffeeType.coffeeName}`)
+        } catch (e) {
+          console.error(new Error(`coffeeType ${coffeeName} is ${coffeeType}`))
+        }
+
+      }
+
+      this.finally()
+    } else {
+      console.log('включите кофе-машину')
+    }
   }
 
   finally() {
     console.log(`---`)
-    this.goTo(new Prepare())
+    this.goTo(new Idle())
+  }
+
+  showState(state) {
+    console.log(state)
   }
 
   nextState() {
