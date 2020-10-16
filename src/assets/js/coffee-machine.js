@@ -1,3 +1,7 @@
+import { CoffeeMachineState,
+  Off, turnOn, Prepare, Ready, CoffeeSelected, WhipMilk, BrewCoffee, Idle
+} from './states'
+
 export class Publisher {
   constructor() {
     this._eventHandlers = {};
@@ -26,9 +30,11 @@ export class CoffeeMachine extends Publisher {
   constructor(config) {
     super();
     const { dev, interfaces, recipes } = config;
+    this.state = new Off()
     this._isDev = dev;
     this.isOn = false;
-    this._cupIsFull = false;
+    // this._cupIsFull = interfaces[0]._cup._isFull;
+    this._cupIsFull = false
     this._isClean = true;
     this._isBroken = false;
     this.recipes = recipes;
@@ -121,6 +127,15 @@ export class CoffeeMachine extends Publisher {
     this._emit('returnCoffeeTypes', coffeeTypes)
   }
 
+  nextState() {
+    this.state = this.state.next()
+    console.log(this.state)
+  }
+
+  goTo(state) {
+    this.state = state
+  }
+
   _prepare(delayMs) {
     this._emit('checking');
 
@@ -131,6 +146,7 @@ export class CoffeeMachine extends Publisher {
       }
 
       if (this._ingredientsAreSufficient()) {
+        this.nextState()
         this._emit('ready', this.coffeeTypes);
       }
     });
@@ -139,10 +155,28 @@ export class CoffeeMachine extends Publisher {
   _turnOn() {
     this.isOn = true;
     this._prepare(1000);
+    if (this.state.name === 'off') {
+      this.nextState()
+      this.goTo(new Prepare())
+      this.isOn = true;
+    }
   }
 
-  _brewCoffee(coffeeType, ms = 4000) {
-    this._emit('brewing', { coffeeType });
+  // _brewCoffee(coffeeType, ms = 4000) {
+  //   this._emit('brewing', { coffeeType });
+  //
+  //   this._delay(ms).then(() => {
+  //     this._consumeIngredients(coffeeType);
+  //
+  //     if (coffeeType.recipe.withMilk) {
+  //       this._whipMilk()
+  //         .then(() => this._pourCoffee(coffeeType.color))
+  //         .catch((e) => console.error(new Error('красная кнопка заглушка!1'), e));
+  //     } else {
+  //       this._pourCoffee(coffeeType.color);
+  //     }
+  //   });
+  // }
 
     this._delay(ms).then(() => {
       this._consumeIngredients(coffeeType);

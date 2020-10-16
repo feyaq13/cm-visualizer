@@ -1,6 +1,7 @@
 import { Hints } from './coffee-machine-hints';
 import { AudioManager } from './audio-manager';
 import { Publisher } from './coffee-machine';
+import { CoffeeCup } from './coffee-cup';
 
 export class CoffeeMachineInterface extends Publisher {
   constructor(hints) {
@@ -12,10 +13,12 @@ export class CoffeeMachineInterface extends Publisher {
     )[0];
     this._ingredientContainers = document.getElementsByClassName('container');
     this._buttonElementsNav = document.getElementsByClassName('coffee-list')[0];
-    this._cupElement = document.getElementsByClassName('coffee-cup')[0];
-    this._cupElementFactor = document.getElementsByClassName('coffee-cup-factor')[0];
+    this._cup = new CoffeeCup({
+      _cupElement: document.getElementsByClassName('coffee-cup-factor')[0],
+      _pouredLiquidElement: document.getElementsByClassName('coffee-cup')[0]
+    });
     this._hinter = typeof hints === 'undefined' ? null : new Hints(
-      [this._switchOnButton, ...this._ingredientContainers, this._cupElementFactor]
+      [this._switchOnButton, ...this._ingredientContainers, this._cup._cupElement]
     );
     this.setupControlsHandlers();
   }
@@ -31,7 +34,6 @@ export class CoffeeMachineInterface extends Publisher {
         this._emit('filledCup')
         this.showIngredientsAvailable(ingredientsAvailable);
         this.renderIngredientsAvailable(ingredientsAvailable)
-        this.setupOnMakeCoffeeTypesOnEventClick();
       },
       noMilk: () => {
         console.log('кажется нет молока');
@@ -58,7 +60,6 @@ export class CoffeeMachineInterface extends Publisher {
       },
       returnCoffeeTypes: (coffeeTypes) => {
         this.showTypesCoffee(coffeeTypes)
-        this.setupOnMakeCoffeeTypesOnEventClick((coffeeType) => coffeeType);
         this.enableAllButtons()
       },
       noWater: () => {
@@ -84,13 +85,13 @@ export class CoffeeMachineInterface extends Publisher {
       ready: (coffeeTypes) => {
         this.showTypesCoffee(coffeeTypes);
         this.stopAnimation('busy');
-        this.setupOnMakeCoffeeTypesOnEventClick((coffeeType) => coffeeType);
+        this.setupOnMakeCoffeeTypesOnEventClick();
         console.log('я готова делать кофе!');
       },
       checking: (cupIsFull) => {
         console.log('проверяю...');
         if (cupIsFull) {
-          this._cupElement.classList.remove('pouring-mode');
+          this._cup._cupElement.classList.remove('pouring-mode');
         }
         this.startAnimation('busy');
       },
@@ -118,7 +119,9 @@ export class CoffeeMachineInterface extends Publisher {
         for (const name of Reflect.ownKeys(ingredientsAvailable)) {
           const ingredient = container.getElementsByClassName(`${name}`)[0]
           if (ingredient) {
-            ingredient.style.clipPath = `polygon(0 ${100 - ingredientsAvailable[name]}%, 100% ${100 - ingredientsAvailable[name]}%, 100% 100%, 0 100%)`
+            ingredient.style.clipPath =
+              `polygon(0 ${100 - ingredientsAvailable[name]}%,
+               100% ${100 - ingredientsAvailable[name]}%, 100% 100%, 0 100%)`
           }
         }
     })
@@ -190,9 +193,9 @@ export class CoffeeMachineInterface extends Publisher {
   }
 
   startPouringDrinkAnimation(ms, colorCoffee) {
-    this._cupElement.style.fill = colorCoffee;
-    this._cupElement.classList.add('pouring-mode');
-    this._cupElement.style.animationDuration = `${ms}ms`;
+    this._cup._pouredLiquidElement.style.fill = colorCoffee;
+    this._cup._pouredLiquidElement.classList.add('pouring-mode');
+    this._cup._pouredLiquidElement.style.animationDuration = `${ms}ms`;
   }
 
   setupControlsHandlers() {
@@ -201,11 +204,11 @@ export class CoffeeMachineInterface extends Publisher {
     );
 
     this._switchOnButton.addEventListener('click', () =>
-      this._eventHandlers.switchOn.forEach((handler) => handler()), {once: true} );
+      this._eventHandlers.switchOn.forEach((handler) => handler()), {once: true});
 
-    document.getElementsByClassName('button-clean-waste')[0]
-    .addEventListener('click',
-      () => this._eventHandlers.cleanUp.forEach((handler) => handler()));
+    // document.getElementsByClassName('button-clean-waste')[0]
+    // .addEventListener('click',
+    //   () => this._eventHandlers.cleanUp.forEach((handler) => handler()));
   }
 
   showContainerStatus(containerName) {
