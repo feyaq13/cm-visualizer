@@ -156,9 +156,9 @@ class CoffeeMachine extends Publisher {
   }
 
   cleanCup() {
-    if (this._cup._isFull) {
+    // if (this._cup._isFull) {
       this._cup._isFull = false;
-    }
+    // }
   }
 
   makeCoffee(coffeeName) {
@@ -222,41 +222,41 @@ class CoffeeMachine extends Publisher {
   }
 }
 
-const cm = new CoffeeMachine({
-  recipes:  [
-    {
-      coffeeName: 'cappuccino',
-      color: '#CFAA8F',
-      recipe: {
-        withMilk: true,
-        milkRequired: 20,
-        waterRequired: 10,
-        grainRequired: 20,
-      },
-    },
-    {
-      coffeeName: 'raf',
-      color: '#CFA780',
-      recipe: {
-        withMilk: true,
-        milkRequired: 20,
-        waterRequired: 10,
-        grainRequired: 20,
-      },
-    },
-    {
-      coffeeName: 'dark coffee',
-      color: '#4F240A',
-      recipe: {
-        withMilk: false,
-        milkRequired: 0,
-        waterRequired: 10,
-        grainRequired: 20,
-      },
-    },
-  ],
-  // interface: new CoffeeMachineInterface(),
-});
+// const cm = new CoffeeMachine({
+//   recipes:  [
+//     {
+//       coffeeName: 'cappuccino',
+//       color: '#CFAA8F',
+//       recipe: {
+//         withMilk: true,
+//         milkRequired: 20,
+//         waterRequired: 10,
+//         grainRequired: 20,
+//       },
+//     },
+//     {
+//       coffeeName: 'raf',
+//       color: '#CFA780',
+//       recipe: {
+//         withMilk: true,
+//         milkRequired: 20,
+//         waterRequired: 10,
+//         grainRequired: 20,
+//       },
+//     },
+//     {
+//       coffeeName: 'dark coffee',
+//       color: '#4F240A',
+//       recipe: {
+//         withMilk: false,
+//         milkRequired: 0,
+//         waterRequired: 10,
+//         grainRequired: 20,
+//       },
+//     },
+//   ],
+//   // interface: new CoffeeMachineInterface(),
+// });
 
 // cm.on()
 // cm.makeCoffee('dark coffee')

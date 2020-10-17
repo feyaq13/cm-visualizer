@@ -45,6 +45,7 @@ export class CoffeeMachine extends Publisher {
     interfaces.forEach((machineInterface) => {
       machineInterface.onEvents({
         switchOn: () => this._turnOn(),
+        switchOff: () => this._turnOff(),
         cleanUp: () => this.clean(),
         coffeeSelected: ({ coffeeName }) => {
           if (this._cupIsFull) {
@@ -162,21 +163,14 @@ export class CoffeeMachine extends Publisher {
     }
   }
 
-  // _brewCoffee(coffeeType, ms = 4000) {
-  //   this._emit('brewing', { coffeeType });
-  //
-  //   this._delay(ms).then(() => {
-  //     this._consumeIngredients(coffeeType);
-  //
-  //     if (coffeeType.recipe.withMilk) {
-  //       this._whipMilk()
-  //         .then(() => this._pourCoffee(coffeeType.color))
-  //         .catch((e) => console.error(new Error('красная кнопка заглушка!1'), e));
-  //     } else {
-  //       this._pourCoffee(coffeeType.color);
-  //     }
-  //   });
-  // }
+  _turnOff() {
+    this.isOn = false;
+    this.goTo(new Off())
+    this._emit('off')
+  }
+
+  _brewCoffee(coffeeType, ms = 4000) {
+    this._emit('brewing', { coffeeType });
 
     this._delay(ms).then(() => {
       this._consumeIngredients(coffeeType);

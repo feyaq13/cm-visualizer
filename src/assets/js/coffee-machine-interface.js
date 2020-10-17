@@ -86,7 +86,14 @@ export class CoffeeMachineInterface extends Publisher {
         this.showTypesCoffee(coffeeTypes);
         this.stopAnimation('busy');
         this.setupOnMakeCoffeeTypesOnEventClick();
+        this.setupSwitchOffHandler()
         console.log('я готова делать кофе!');
+      },
+      off: () => {
+        this.removeOnMakeCoffeeTypesOnEventClick()
+        this._switchOnButton.setAttribute('aria-checked', 'false');
+        this.setupControlsHandlers();
+        console.clear()
       },
       checking: (cupIsFull) => {
         console.log('проверяю...');
@@ -159,7 +166,15 @@ export class CoffeeMachineInterface extends Publisher {
 
   setupOnMakeCoffeeTypesOnEventClick() {
     const option = { once: false }
-    this._buttonElementsNav.addEventListener('click', (e) => {
+    this._buttonElementsNav.addEventListener('click', this.handlerOnSelectedCoffee, option );
+  }
+
+  removeOnMakeCoffeeTypesOnEventClick() {
+    this._buttonElementsNav.removeEventListener('click', this.handlerOnSelectedCoffee);
+  }
+
+  handlerOnSelectedCoffee() {
+    return (e, option) => {
       if (e.target.type === 'button') {
         this.startAnimation('busy');
         this.disableAllButtons(e);
@@ -167,7 +182,7 @@ export class CoffeeMachineInterface extends Publisher {
 
         this._emit('coffeeSelected', { coffeeName: e.target.textContent });
       }
-    }, option);
+    }
   }
 
   disableAllButtons(e) {
@@ -203,12 +218,19 @@ export class CoffeeMachineInterface extends Publisher {
       button.addEventListener('click', this._audioManager.play.bind(this._audioManager, 'clickButtonsSound'))
     );
 
-    this._switchOnButton.addEventListener('click', () =>
-      this._eventHandlers.switchOn.forEach((handler) => handler()), {once: true});
+    this._switchOnButton.addEventListener('click', () => {
+      this._eventHandlers.switchOn.forEach((handler) => handler());
+    }, {once: true});
 
     // document.getElementsByClassName('button-clean-waste')[0]
     // .addEventListener('click',
     //   () => this._eventHandlers.cleanUp.forEach((handler) => handler()));
+  }
+
+  setupSwitchOffHandler() {
+    this._switchOnButton.addEventListener('click', () => {
+      this._eventHandlers.switchOff.forEach((handler) => handler());
+    }, {once: true});
   }
 
   showContainerStatus(containerName) {

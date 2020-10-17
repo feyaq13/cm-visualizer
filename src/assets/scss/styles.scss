@@ -7,6 +7,8 @@ html, body, main {
 
 body {
   margin: 0;
+  font-family: Arial, sans-serif;
+  max-height: 100%;
 }
 
 .hints-mode {
@@ -37,6 +39,20 @@ use {
   position: relative;
   z-index: 1;
 }
+//.volume {
+//  position: absolute;
+//  left: 20px;
+//  top: 20px;
+//
+//  &__icon {
+//    vertical-align: middle;
+//    margin-right: 6px;
+//  }
+//
+//  &__input-range {
+//    vertical-align: middle;
+//  }
+//}
 
 main {
   display: flex;
@@ -94,7 +110,6 @@ body:not(.hints-mode) {
     fill: darkgrey;
     transform-box: fill-box;
     transform-origin: center;
-    transform: scale(1.2);
     box-shadow: 0 50px rgba(17, 0, 0, 0);
   }
 }
@@ -106,6 +121,10 @@ body:not(.hints-mode) {
 
   &[aria-checked='true'] {
     fill: $busy-mode;
+  }
+
+  &[aria-checked='false'] {
+    fill: grey;
   }
 
   &[aria-checked='true'] ~ .container {
