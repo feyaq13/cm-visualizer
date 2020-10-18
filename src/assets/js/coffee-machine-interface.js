@@ -20,6 +20,7 @@ export class CoffeeMachineInterface extends Publisher {
     this._hinter = typeof hints === 'undefined' ? null : new Hints(
       [this._switchOnButton, ...this._ingredientContainers, this._cup._cupElement]
     );
+    this.boundhandlerOnSelectedCoffee = this.handlerOnSelectedCoffee.bind(this)
     this.setupControlsHandlers();
   }
 
@@ -29,6 +30,7 @@ export class CoffeeMachineInterface extends Publisher {
         this.stopAnimation('busy');
         this.enableAllButtons();
         this._audioManager.stop('grindCoffeeBeansSound');
+        this.setupOnMakeCoffeeTypesOnEventClick();
         console.log('Кофе готов!');
         this._audioManager.stop('pouringCoffeeSound')
         this._emit('filledCup')
@@ -98,7 +100,7 @@ export class CoffeeMachineInterface extends Publisher {
       checking: (cupIsFull) => {
         console.log('проверяю...');
         if (cupIsFull) {
-          this._cup._cupElement.classList.remove('pouring-mode');
+          this._cup._pouredLiquidElement.classList.remove('pouring-mode');
         }
         this.startAnimation('busy');
       },
@@ -165,23 +167,21 @@ export class CoffeeMachineInterface extends Publisher {
   }
 
   setupOnMakeCoffeeTypesOnEventClick() {
-    const option = { once: false }
-    this._buttonElementsNav.addEventListener('click', this.handlerOnSelectedCoffee, option );
+    this._buttonElementsNav.addEventListener('click', this.boundhandlerOnSelectedCoffee);
   }
 
   removeOnMakeCoffeeTypesOnEventClick() {
-    this._buttonElementsNav.removeEventListener('click', this.handlerOnSelectedCoffee);
+    this._buttonElementsNav.removeEventListener('click', this.boundhandlerOnSelectedCoffee);
   }
 
-  handlerOnSelectedCoffee() {
-    return (e, option) => {
-      if (e.target.type === 'button') {
-        this.startAnimation('busy');
-        this.disableAllButtons(e);
-        option.once = true;
+  handlerOnSelectedCoffee(e) {
+    console.clear()
+    if (e.target.type === 'button') {
+      this.startAnimation('busy');
+      this.disableAllButtons(e);
+      this.removeOnMakeCoffeeTypesOnEventClick()
 
-        this._emit('coffeeSelected', { coffeeName: e.target.textContent });
-      }
+      this._emit('coffeeSelected', { coffeeName: e.target.textContent });
     }
   }
 
@@ -222,9 +222,9 @@ export class CoffeeMachineInterface extends Publisher {
       this._eventHandlers.switchOn.forEach((handler) => handler());
     }, {once: true});
 
-    // document.getElementsByClassName('button-clean-waste')[0]
-    // .addEventListener('click',
-    //   () => this._eventHandlers.cleanUp.forEach((handler) => handler()));
+    document.getElementsByClassName('button-clean-waste')[0]
+    .addEventListener('click',
+      () => this._eventHandlers.cleanUp.forEach((handler) => handler()));
   }
 
   setupSwitchOffHandler() {
