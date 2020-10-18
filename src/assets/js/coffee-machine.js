@@ -48,10 +48,8 @@ export class CoffeeMachine extends Publisher {
         switchOff: () => this._turnOff(),
         cleanUp: () => this.clean(),
         coffeeSelected: ({ coffeeName }) => {
-          if (this._cupIsFull) {
-            this._emit('checking', this._cupIsFull);
-            this._cupIsFull = false;
-          }
+          this._emit('checking', this._cupIsFull);
+          this._cupIsFull = false;
 
           if (this._ingredientsAreSufficient()) {
             const coffeeType = this.searchTargetRecipe(coffeeName);
