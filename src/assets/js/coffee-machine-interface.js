@@ -26,58 +26,59 @@ export class CoffeeMachineInterface extends Publisher {
 
   setupEvents(machine) {
     machine.onEvents({
-      coffeeReady: (ingredientsAvailable) => {
-        this.stopAnimation('busy');
-        this.enableAllButtons();
-        this._audioManager.stop('grindCoffeeBeansSound');
-        this.setupOnMakeCoffeeTypesOnEventClick();
-        console.log('Кофе готов!');
-        this._audioManager.stop('pouringCoffeeSound')
-        this._emit('filledCup')
-        this.showIngredientsAvailable(ingredientsAvailable);
-        this.renderIngredientsAvailable(ingredientsAvailable)
-      },
-      noMilk: () => {
-        console.log('кажется нет молока');
-        this.stopAnimation('busy');
-        this.startAnimation('error');
-        this.showContainerStatus('milk');
-        this.fillContainer('milk');
-      },
-      noGrains: () => {
-        console.log('нет зерен');
-        this.stopAnimation('busy');
-        this.startAnimation('error');
-        this.showContainerStatus('grain');
-        this.fillContainer('grain');
-      },
-      replenishmentOfIngredients: (data) => {
-        if (Object.values(data.ingredientsAvailable).every(ingredientAmount => ingredientAmount > 10)) {
-          this.stopAnimation('error');
-          this._emit('filledAllContainers')
-        }
-
-        this.showIngredientsAvailable(data.ingredientsAvailable);
-        this.renderIngredientsAvailable(data.ingredientsAvailable)
-      },
-      returnCoffeeTypes: (coffeeTypes) => {
-        this.showTypesCoffee(coffeeTypes)
-        this.enableAllButtons()
-      },
-      noWater: () => {
-        console.log('кажется нет воды');
-        this.stopAnimation('busy');
-        this.startAnimation('error');
-        this.showContainerStatus('water')
-        this.fillContainer('water')
-      },
-      whipping: () => {
-        console.log('взбиваю 🥛...');
-      },
-      pouring: ({ colorCoffee }) => {
-        this.startPouringDrinkAnimation(9500, colorCoffee);
-        this._audioManager.play('pouringCoffeeSound')
-      },
+      // coffeeReady: (ingredientsAvailable) => {
+      //   this.stopAnimation('busy');
+      //   this.enableAllButtons();
+      //   this._audioManager.stop('grindCoffeeBeansSound');
+      //   this.setupOnMakeCoffeeTypesOnEventClick();
+      //   console.log('Кофе готов!');
+      //   this._audioManager.stop('pouringCoffeeSound')
+      //   this._emit('filledCup')
+      //   this.showIngredientsAvailable(ingredientsAvailable);
+      //   this.renderIngredientsAvailable(ingredientsAvailable)
+      // },
+      // noMilk: () => {
+      //   console.log('кажется нет молока');
+      //   this.stopAnimation('busy');
+      //   this.startAnimation('error');
+      //   this.showContainerStatus('milk');
+      //   this.fillContainer('milk');
+      // },
+      // noGrains: () => {
+      //   console.log('нет зерен');
+      //   this.stopAnimation('busy');
+      //   this.startAnimation('error');
+      //   this.showContainerStatus('grain');
+      //   this.fillContainer('grain');
+      // },
+      // replenishmentOfIngredients: (data) => {
+      //   if (Object.values(data.ingredientsAvailable).every(ingredientAmount => ingredientAmount > 10)) {
+      //     this.stopAnimation('error');
+      //     this._emit('filledAllContainers')
+      //   }
+      //
+      //   this.showIngredientsAvailable(data.ingredientsAvailable);
+      //   this.renderIngredientsAvailable(data.ingredientsAvailable)
+      // },
+      // returnCoffeeTypes: (coffeeTypes) => {
+      //   this.showTypesCoffee(coffeeTypes)
+      //   this.enableAllButtons()
+      //   this.setupOnMakeCoffeeTypesOnEventClick()
+      // },
+      // noWater: () => {
+      //   console.log('кажется нет воды');
+      //   this.stopAnimation('busy');
+      //   this.startAnimation('error');
+      //   this.showContainerStatus('water')
+      //   this.fillContainer('water')
+      // },
+      // whipping: () => {
+      //   console.log('взбиваю 🥛...');
+      // },
+      // pouring: ({ colorCoffee }) => {
+      //   this.startPouringDrinkAnimation(9500, colorCoffee);
+      //   this._audioManager.play('pouringCoffeeSound')
+      // },
       cleaning: () => {
         console.log('очищаю...');
       },
@@ -104,10 +105,10 @@ export class CoffeeMachineInterface extends Publisher {
         }
         this.startAnimation('busy');
       },
-      brewing: ({ coffeeType }) => {
-        this._audioManager.play('grindCoffeeBeansSound')
-        console.log(`завариваю ${coffeeType.coffeeName}`);
-      },
+      // brewing: ({ coffeeType }) => {
+      //   this._audioManager.play('grindCoffeeBeansSound')
+      //   console.log(`завариваю ${coffeeType.coffeeName}`);
+      // },
       welcome: ({ coffeeTypes, ingredientsAvailable }) => {
         this.renderIngredientsAvailable(ingredientsAvailable);
         this.showIngredientsAvailable(ingredientsAvailable);
@@ -136,23 +137,23 @@ export class CoffeeMachineInterface extends Publisher {
     })
   }
 
-  fillContainer(containerName) {
-    Array.prototype.find.call(
-      this._ingredientContainers,
-      (container => container.children[0].dataset.containerName === containerName)
-    )
-    .addEventListener('click', () => {
-      let amountOf = prompt('Сколько положить?', '100')
-      if (amountOf > 100 || amountOf === null) {
-        amountOf = 100;
-      }
-
-      this.showContainerStatus(containerName);
-      this._audioManager.play('fillingContainerSound');
-      // alert(`Пополнение в ${containerName}: ${amountOf}`)
-      this._emit('fillingContainer', {containerName, amountOf})
-    })
-  }
+  // fillContainer(containerName) {
+  //   Array.prototype.find.call(
+  //     this._ingredientContainers,
+  //     (container => container.children[0].dataset.containerName === containerName)
+  //   )
+  //   .addEventListener('click', () => {
+  //     let amountOf = prompt('Сколько положить?', '100')
+  //     if (amountOf > 100 || amountOf === null) {
+  //       amountOf = 100;
+  //     }
+  //
+  //     this.showContainerStatus(containerName);
+  //     this._audioManager.play('fillingContainerSound');
+  //     // alert(`Пополнение в ${containerName}: ${amountOf}`)
+  //     this._emit('fillingContainer', {containerName, amountOf})
+  //   })
+  // }
 
   showIngredientsAvailable(ingredientsAvailable) {
     const listIngredients = document.getElementsByClassName('information')[0];
@@ -181,7 +182,7 @@ export class CoffeeMachineInterface extends Publisher {
       this.disableAllButtons(e);
       this.removeOnMakeCoffeeTypesOnEventClick()
 
-      this._emit('coffeeSelected', { coffeeName: e.target.textContent });
+      this.emit('coffeeSelected', { coffeeName: e.target.textContent });
     }
   }
 
@@ -207,11 +208,11 @@ export class CoffeeMachineInterface extends Publisher {
     this._switchOnButton.classList.remove(`${type}-mode`);
   }
 
-  startPouringDrinkAnimation(ms, colorCoffee) {
-    this._cup._pouredLiquidElement.style.fill = colorCoffee;
-    this._cup._pouredLiquidElement.classList.add('pouring-mode');
-    this._cup._pouredLiquidElement.style.animationDuration = `${ms}ms`;
-  }
+  // startPouringDrinkAnimation(ms, colorCoffee) {
+  //   this._cup._pouredLiquidElement.style.fill = colorCoffee;
+  //   this._cup._pouredLiquidElement.classList.add('pouring-mode');
+  //   this._cup._pouredLiquidElement.style.animationDuration = `${ms}ms`;
+  // }
 
   setupControlsHandlers() {
     Array.prototype.forEach.call(this._buttonElements, (button) =>
@@ -221,10 +222,10 @@ export class CoffeeMachineInterface extends Publisher {
     this._switchOnButton.addEventListener('click', () => {
       this._eventHandlers.switchOn.forEach((handler) => handler());
     }, {once: true});
-
-    document.getElementsByClassName('button-clean-waste')[0]
-    .addEventListener('click',
-      () => this._eventHandlers.cleanUp.forEach((handler) => handler()));
+    //
+    // document.getElementsByClassName('button-clean-waste')[0]
+    // .addEventListener('click',
+    //   () => this._eventHandlers.cleanUp.forEach((handler) => handler()));
   }
 
   setupSwitchOffHandler() {
@@ -233,14 +234,14 @@ export class CoffeeMachineInterface extends Publisher {
     }, {once: true});
   }
 
-  showContainerStatus(containerName) {
-    const targetContainer = Array.prototype.find.call(
-      document.getElementsByClassName('container-inner'),
-      (container) => container.dataset.containerName === containerName
-    )
-
-    targetContainer.classList.toggle('error-mode');
-  }
+  // showContainerStatus(containerName) {
+  //   const targetContainer = Array.prototype.find.call(
+  //     document.getElementsByClassName('container-inner'),
+  //     (container) => container.dataset.containerName === containerName
+  //   )
+  //
+  //   targetContainer.classList.toggle('error-mode');
+  // }
 
   showTypesCoffee(coffeeTypes) {
     if (this._buttonElementsNav.childElementCount === 0) {

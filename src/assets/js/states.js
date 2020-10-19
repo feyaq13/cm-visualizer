@@ -4,38 +4,68 @@ export class CoffeeMachineState {
     this.nextState = nextState;
   }
 
-  next() {
-    return new this.nextState();
+  next(context) {
+    return new this.nextState(context);
+  }
+
+  _setContext(context) {
+    this.context = context;
   }
 }
 
 export class Off extends CoffeeMachineState {
   constructor() {
-    super('off', turnOn);
+    super('off', TurnOn);
   }
 }
 
-export class turnOn extends CoffeeMachineState {
-  constructor() {
+export class TurnOn extends CoffeeMachineState {
+  constructor(config) {
     super('turnOn', Prepare);
+    const { context } = config
+    this.context = context;
   }
-}
 
-export class Idle extends CoffeeMachineState {
-  constructor() {
-    super('idle', Prepare);
+  init() {
+    console.log(this.context.state)
+    this.context.emit('welcome', {
+      coffeeTypes: this.context.coffeeTypes,
+      ingredientsAvailable: this.context.ingredientsAvailable
+    });
+
+    this.context.nextState()
   }
 }
 
 export class Prepare extends CoffeeMachineState {
-  constructor() {
+  constructor(config) {
     super('prepare', Ready);
+    const { context } = config
+    this.context = context
+  }
+
+  init(delayMs) {
+    this.context.emit('checking', this.context.cupIsFull);
+
+    this.context.delay(delayMs).then(() => {
+      if (!this.context.isClean && !this.context.isBroken) {
+        this.context.emit('cleaning');
+        this.context.clean();
+      }
+
+      if (this.context.ingredientsAreSufficient()) {
+        this.context.nextState()
+        this.context.emit('ready', this.context.coffeeTypes);
+      }
+    });
   }
 }
 
 export class Ready extends CoffeeMachineState {
-  constructor() {
+  constructor(config) {
     super('ready', CoffeeSelected);
+    const { context } = config
+    this.context = context
   }
 }
 
@@ -53,9 +83,40 @@ export class WhipMilk extends CoffeeMachineState {
 
 export class BrewCoffee extends CoffeeMachineState {
   constructor() {
-    super('brewCoffee', Idle);
+    super('brewCoffee', PourCoffee);
   }
 }
+
+export class PourCoffee extends CoffeeMachineState {
+  constructor() {
+    super('pourCoffee', Idle);
+  }
+}
+
+export class Idle extends CoffeeMachineState {
+  constructor() {
+    super('idle', Prepare);
+  }
+}
+
+export class NoGrains extends CoffeeMachineState {
+  constructor() {
+    super('noGrains', Ready);
+  }
+}
+
+export class NoMilk extends CoffeeMachineState {
+  constructor() {
+    super('noMilk', Ready);
+  }
+}
+
+export class NoWater extends CoffeeMachineState {
+  constructor() {
+    super('noWater', Ready);
+  }
+}
+
 //
 // class CoffeeCup {
 //   constructor(options) {
@@ -66,162 +127,159 @@ export class BrewCoffee extends CoffeeMachineState {
 //     this._pouredLiquidElement = pouredLiquidElement;
 //   }
 // }
-
-class CoffeeMachineContainers {
-  constructor(ingredients) {
-    this.grain = ingredients.grain;
-    this.milk = ingredients.milk;
-    this.water = ingredients.water;
-  }
-}
-
-class Publisher {
-  constructor() {
-    this._notifiable = null;
-  }
-
-  _emit(event, data) {
-    this._notifiable.events[event](data)
-  }
-}
-
-class CoffeeMachine extends Publisher {
-  constructor(config) {
-    super()
-    // this.events = this.setupEvents()
-    // const { recipes, interfaces } = config;
-    // this.state = new Off()
-    // this._on = false;
-    // this.recipes = recipes;
-    // this.coffeeTypes = this.recipes.map((r) => r.coffeeName);
-    // this._wasteAmount = 0;
-    // this._isClean = true;
-    // this._isBroken = false;
-    // this._isChecking = false;
-    // this.interfaces = interfaces;
-    // // this._cup = new CoffeeCup({
-    // //   _cupElement: document.getElementsByClassName('coffee-cup-factor')[0],
-    // //   _pouredLiquidElement: document.getElementsByClassName('coffee-cup')[0]
-    // // });
-    // this.ingredientsContainers = new CoffeeMachineContainers({ 'grain':100, 'milk':100, 'water':100 })
-    // this._init()
-  }
-
-  // _init() {
-  //   this._notifiable = this.interfaces;
-  //   this.setupEvents();
-  // }  //
-  //   // setupEvents() {
-  //   //   return {
-  //   //     'onEventName': (data) => {
-  //   //       this.foo(data)
-  //   //     },
-  //   //   }
-  //   // }
-
-  on() {
-    if (this.state.name === 'off') {
-      this.nextState()
-      this.goTo(new Prepare())
-      this._on = true;
-    }
-  }
-
-  off() {
-    if (this.state.name !== 'off') {
-      this.state = new Off()
-      this._on = false;
-    }
-
-  }
-
-  checking() {
-    if (!this._isChecking) {
-      if (!this._isClean) {
-        this._isClean = true;
-        console.log('почистила')
-      }
-
-      if (this._isBroken) {
-        this._isBroken = false;
-      }
-
-      this._isChecking = true
-      this.nextState()
-    }
-  }
-
-  searchCoffeeType(coffeeType) {
-    return this.recipes.find(recipe => recipe.coffeeName === coffeeType)
-  }
-
-  cleanCup() {
-    // if (this._cup._isFull) {
-      this._cup._isFull = false;
-    // }
-  }
-
-  makeCoffee(coffeeName) {
-
-    if (this.state.name === 'idle') {
-      this.cleanCup()
-      this.nextState()
-    }
-
-    if (this.state.name === 'prepare') {
-      this.checking()
-    }
-
-    if (this._on) {
-      if (this.state.name === 'coffeeSelected' || this.state.name === 'ready') {
-        this.nextState()
-
-        const coffeeType = this.searchCoffeeType(coffeeName)
-
-        try {
-          if (coffeeType.recipe.withMilk) {
-            this.nextState()
-            console.log(`взбиваю молоко`)
-            this.nextState()
-          } else {
-            this.goTo(new BrewCoffee())
-            console.log(this.state)
-          }
-
-          console.log(`завариваю ${coffeeType.coffeeName}`)
-
-        } catch (e) {
-          console.error(new Error(`coffeeType ${coffeeName} is ${coffeeType}`))
-        }
-
-      }
-
-      this.finally()
-    } else {
-      console.log('включите кофе-машину')
-    }
-  }
-
-  finally() {
-    console.log(`кофе готов!`)
-    console.log(`---`)
-    this.nextState()
-    this._isChecking = false;
-    this._isClean = false;
-    this._cup._isFull = true;
-    this.goTo(new Idle())
-  }
-
-  nextState() {
-    this.state = this.state.next()
-    console.log(this.state)
-  }
-
-  goTo(state) {
-    this.state = state
-  }
-}
-
+// class CoffeeMachineContainers {
+//   constructor(ingredients) {
+//     this.grain = ingredients.grain;
+//     this.milk = ingredients.milk;
+//     this.water = ingredients.water;
+//   }
+// }
+//
+// class Publisher {
+//   constructor() {
+//     this._notifiable = null;
+//   }
+//
+//   _emit(event, data) {
+//     this._notifiable.events[event](data)
+//   }
+// }
+// class CoffeeMachine extends Publisher {
+//   constructor(config) {
+//     super()
+//     // this.events = this.setupEvents()
+//     // const { recipes, interfaces } = config;
+//     // this.state = new Off()
+//     // this._on = false;
+//     // this.recipes = recipes;
+//     // this.coffeeTypes = this.recipes.map((r) => r.coffeeName);
+//     // this._wasteAmount = 0;
+//     // this._isClean = true;
+//     // this._isBroken = false;
+//     // this._isChecking = false;
+//     // this.interfaces = interfaces;
+//     // // this._cup = new CoffeeCup({
+//     // //   _cupElement: document.getElementsByClassName('coffee-cup-factor')[0],
+//     // //   _pouredLiquidElement: document.getElementsByClassName('coffee-cup')[0]
+//     // // });
+//     // this.ingredientsContainers = new CoffeeMachineContainers({ 'grain':100, 'milk':100, 'water':100 })
+//     // this._init()
+//   }
+//
+//   // _init() {
+//   //   this._notifiable = this.interfaces;
+//   //   this.setupEvents();
+//   // }  //
+//   //   // setupEvents() {
+//   //   //   return {
+//   //   //     'onEventName': (data) => {
+//   //   //       this.foo(data)
+//   //   //     },
+//   //   //   }
+//   //   // }
+//
+//   on() {
+//     if (this.state.name === 'off') {
+//       this.nextState()
+//       this.goTo(new Prepare())
+//       this._on = true;
+//     }
+//   }
+//
+//   off() {
+//     if (this.state.name !== 'off') {
+//       this.state = new Off()
+//       this._on = false;
+//     }
+//
+//   }
+//
+//   checking() {
+//     if (!this._isChecking) {
+//       if (!this._isClean) {
+//         this._isClean = true;
+//         console.log('почистила')
+//       }
+//
+//       if (this._isBroken) {
+//         this._isBroken = false;
+//       }
+//
+//       this._isChecking = true
+//       this.nextState()
+//     }
+//   }
+//
+//   searchCoffeeType(coffeeType) {
+//     return this.recipes.find(recipe => recipe.coffeeName === coffeeType)
+//   }
+//
+//   cleanCup() {
+//     // if (this._cup._isFull) {
+//       this._cup._isFull = false;
+//     // }
+//   }
+//
+//   makeCoffee(coffeeName) {
+//
+//     if (this.state.name === 'idle') {
+//       this.cleanCup()
+//       this.nextState()
+//     }
+//
+//     if (this.state.name === 'prepare') {
+//       this.checking()
+//     }
+//
+//     if (this._on) {
+//       if (this.state.name === 'coffeeSelected' || this.state.name === 'ready') {
+//         this.nextState()
+//
+//         const coffeeType = this.searchCoffeeType(coffeeName)
+//
+//         try {
+//           if (coffeeType.recipe.withMilk) {
+//             this.nextState()
+//             console.log(`взбиваю молоко`)
+//             this.nextState()
+//           } else {
+//             this.goTo(new BrewCoffee())
+//             console.log(this.state)
+//           }
+//
+//           console.log(`завариваю ${coffeeType.coffeeName}`)
+//
+//         } catch (e) {
+//           console.error(new Error(`coffeeType ${coffeeName} is ${coffeeType}`))
+//         }
+//
+//       }
+//
+//       this.finally()
+//     } else {
+//       console.log('включите кофе-машину')
+//     }
+//   }
+//
+//   finally() {
+//     console.log(`кофе готов!`)
+//     console.log(`---`)
+//     this.nextState()
+//     this._isChecking = false;
+//     this._isClean = false;
+//     this._cup._isFull = true;
+//     this.goTo(new Idle())
+//   }
+//
+//   nextState() {
+//     this.state = this.state.next()
+//     console.log(this.state)
+//   }
+//
+//   goTo(state) {
+//     this.state = state
+//   }
+// }
 // const cm = new CoffeeMachine({
 //   recipes:  [
 //     {
@@ -257,7 +315,6 @@ class CoffeeMachine extends Publisher {
 //   ],
 //   // interface: new CoffeeMachineInterface(),
 // });
-
 // cm.on()
 // cm.makeCoffee('dark coffee')
 // cm.makeCoffee('cappuccino')
