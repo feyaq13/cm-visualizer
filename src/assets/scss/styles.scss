@@ -123,10 +123,6 @@ body:not(.hints-mode) {
     fill: $busy-mode;
   }
 
-  &[aria-checked='false'] {
-    fill: grey;
-  }
-
   &[aria-checked='true'] ~ .container {
     cursor: pointer;
   }

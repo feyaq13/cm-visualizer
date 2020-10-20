@@ -76,21 +76,49 @@ export class CoffeeSelected extends CoffeeMachineState {
 }
 
 export class WhipMilk extends CoffeeMachineState {
-  constructor() {
+  constructor(config) {
     super('whipMilk', BrewCoffee);
+    // const { context } = config
+    // this.context = context
   }
+  //
+  // init() {
+  //   // console.log('взбиваю 🥛...')
+  //   return this.context.delay(2000).then(() => {
+  //     if (this.context.ingredientsAvailable.milk > 0) {
+  //       this.context.emit('whipping');
+  //     } else {
+  //       this.context.emit('noMilk');
+  //     }
+  //   });
+  // }
 }
 
 export class BrewCoffee extends CoffeeMachineState {
-  constructor() {
+  constructor(config) {
     super('brewCoffee', PourCoffee);
+    // const { context } = config
+    // this.context = context
   }
+
+  // init(coffeeType, ms) {
+  // }
 }
 
 export class PourCoffee extends CoffeeMachineState {
-  constructor() {
+  constructor(config) {
     super('pourCoffee', Idle);
+    const { context } = config
+    this.context = context
   }
+  //
+  // init(colorCoffee) {
+  //   console.log('наливааюю')
+  //
+  //   return this.context.delay(10000).then(() => {
+  //     this.context.emit('pouring', { colorCoffee });
+  //   });
+  // }
 }
 
 export class Idle extends CoffeeMachineState {
