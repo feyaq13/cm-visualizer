@@ -78,33 +78,24 @@ export class CoffeeMachine extends Publisher {
     return true;
   }
 
-  makeCoffee(coffeeName) {
-    // this._setState(CoffeeSelected);
-    debugger
-    this.emit('checking', this._cupIsFull);
-    this._cupIsFull = false;
-
-    if (this.ingredientsAreSufficient()) {
-      const coffeeType = this.searchTargetRecipe(coffeeName);
-      this._brewCoffee(coffeeType);
-    }
-  }
-
   ingredientsAreSufficient() {
     let emptyContainers = [];
     if (this.ingredientsAvailable.grain <= 20) {
       emptyContainers.push(this.ingredientsAvailable.grain)
       this.emit('noGrains');
+      this._setState(NoGrains)
     }
 
     if (this.ingredientsAvailable.water <= 20) {
       emptyContainers.push(this.ingredientsAvailable.water)
       this.emit('noWater');
+      this._setState(NoWater)
     }
 
     if (this.ingredientsAvailable.milk <= 20) {
       emptyContainers.push(this.ingredientsAvailable.milk)
       this.emit('noMilk');
+      this._setState(NoMilk)
     }
 
     return !emptyContainers.length
@@ -120,7 +111,7 @@ export class CoffeeMachine extends Publisher {
       this.ingredientsAvailable[ingredient] += amount;
     }
 
-    this._emit('replenishmentOfIngredients', {amount, ingredientsAvailable: this._ingredientsAvailable})
+    this.emit('replenishmentOfIngredients', {amount, ingredientsAvailable: this._ingredientsAvailable})
   }
 
   _getCoffeeTypes(coffeeTypes) {
@@ -154,7 +145,6 @@ export class CoffeeMachine extends Publisher {
   }
 
   _turnOff() {
-    debugger
     if (this.state.name !== 'coffeeSelected' &&
       this.state.name !== 'whipMilk' &&
       this.state.name !== 'brewCoffee' &&
@@ -165,20 +155,30 @@ export class CoffeeMachine extends Publisher {
     }
   }
 
+  makeCoffee(coffeeName) {
+    this._setState(CoffeeSelected);
+    this.emit('checking', this._cupIsFull);
+    this._cupIsFull = false;
+    const coffeeType = this.searchTargetRecipe(coffeeName);
+
+    if (this.ingredientsAreSufficient()) {
+      this._brewCoffee(coffeeType).then(() => {
+        if (coffeeType.recipe.withMilk) {
+          this._whipMilk(5000)
+          .then(() => this._pourCoffee(coffeeType.color, 10000))
+          .catch((e) => console.error(new Error('красная кнопка заглушка!1'), e));
+        } else {
+          this._pourCoffee(coffeeType.color, 10000);
+        }
+      })
+    }
+  }
+
   _brewCoffee(coffeeType, ms = 4000) {
-    debugger
     this.emit('brewing', { coffeeType });
 
-    this.delay(ms).then(() => {
+    return this.delay(ms).then(() => {
       this._consumeIngredients(coffeeType);
-
-      if (coffeeType.recipe.withMilk) {
-        this._whipMilk()
-          .then(() => this._pourCoffee(coffeeType.color))
-          .catch((e) => console.error(new Error('красная кнопка заглушка!1'), e));
-      } else {
-        this._pourCoffee(coffeeType.color);
-      }
     });
   }
 
@@ -190,12 +190,12 @@ export class CoffeeMachine extends Publisher {
     this.ingredientsAvailable.water -= waterRequired;
     this._wasteAmount += grainRequired;
 
-    this._isClean = false;
+    this.isClean = false;
   }
 
-  _pourCoffee(colorCoffee) {
+  _pourCoffee(colorCoffee, ms) {
     this.emit('pouring', { colorCoffee });
-    this.delay(10000).then(() => {
+    this.delay(ms).then(() => {
       this.emit('coffeeReady', this.ingredientsAvailable);
     });
   }
@@ -206,13 +206,47 @@ export class CoffeeMachine extends Publisher {
     );
   }
 
-  _whipMilk() {
-    return this.delay(2000).then(() => {
+  _whipMilk(ms) {
+    return this.delay(ms).then(() => {
       if (this.ingredientsAvailable.milk > 0) {
-        // this.emit('whipping');
+        this.emit('whipping');
       } else {
         this.emit('noMilk');
       }
     });
   }
+
+// _brewCoffee(coffeeType, ms = 4000) {
+  //   this._setState(BrewCoffee);
+  //   this.emit('brewing', { coffeeType });
+  //   this.state.init(coffeeType, ms)
+  // }
+  //
+  // _consumeIngredients(coffeeType) {
+  //   const { waterRequired, grainRequired, milkRequired } = coffeeType.recipe;
+  //
+  //   this.ingredientsAvailable.milk -= milkRequired;
+  //   this.ingredientsAvailable.grain -= grainRequired;
+  //   this.ingredientsAvailable.water -= waterRequired;
+  //   this._wasteAmount += grainRequired;
+  //
+  //   this.isClean = false;
+  // }
+  //
+  // _pourCoffee(colorCoffee) {
+  //   this._setState(PourCoffee);
+  //   this.emit('pouring', { colorCoffee });
+  //   return this.state.init(colorCoffee, 10000);
+  // }
+  //
+  // delay(ms) {
+  //   return new Promise(
+  //     (resolve) => setTimeout(resolve, this._isDev ? 10 : ms)
+  //   );
+  // }
+  //
+  // _whipMilk(ms) {
+  //   this._setState(WhipMilk)
+  //   return this.state.init(ms);
+  // }
 }

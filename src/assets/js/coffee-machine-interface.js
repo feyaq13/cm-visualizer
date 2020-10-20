@@ -73,12 +73,12 @@ export class CoffeeMachineInterface extends Publisher {
       //   this.fillContainer('water')
       // },
       whipping: () => {
-        // console.log('взбиваю 🥛...');
+        console.log('взбиваю 🌀...');
       },
       pouring: ({ colorCoffee }) => {
-        console.log('наливаю 🥛...');
         this.startPouringDrinkAnimation(9500, colorCoffee);
         this._audioManager.play('pouringCoffeeSound')
+        console.log('наливаю 🥛...');
       },
       cleaning: () => {
         console.log('очищаю...');

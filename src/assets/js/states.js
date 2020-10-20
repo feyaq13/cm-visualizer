@@ -44,7 +44,7 @@ export class Prepare extends CoffeeMachineState {
     this.context = context
   }
 
-  init(delayMs) {
+  init(delayMs = 1000) {
     this.context.emit('checking', this.context.cupIsFull);
 
     this.context.delay(delayMs).then(() => {
@@ -78,30 +78,42 @@ export class CoffeeSelected extends CoffeeMachineState {
 export class WhipMilk extends CoffeeMachineState {
   constructor(config) {
     super('whipMilk', BrewCoffee);
-    // const { context } = config
-    // this.context = context
+    const { context } = config
+    this.context = context
   }
-  //
-  // init() {
-  //   // console.log('взбиваю 🥛...')
-  //   return this.context.delay(2000).then(() => {
-  //     if (this.context.ingredientsAvailable.milk > 0) {
-  //       this.context.emit('whipping');
-  //     } else {
-  //       this.context.emit('noMilk');
-  //     }
-  //   });
-  // }
+
+  init(coffeeType, ms = 1000) {
+    return this.context.delay(ms).then(() => {
+
+      if (coffeeType.recipe.withMilk) {
+        this.context._whipMilk(ms)
+        .then(() => {
+          this.context._setState(BrewCoffee)
+          this.context.state.init(coffeeType)
+        })
+        .catch((e) => console.error(
+          new Error('что-то очень пошло не так'),
+          e));
+      }
+
+    });
+  }
+
 }
 
 export class BrewCoffee extends CoffeeMachineState {
   constructor(config) {
     super('brewCoffee', PourCoffee);
-    // const { context } = config
-    // this.context = context
+    const { context } = config
+    this.context = context
   }
 
-  // init(coffeeType, ms) {
+  // init(coffeeType, ms = 1000) {
+  //   return this.context.delay(ms)
+  //   .then(() => {
+  //     this.context._consumeIngredients(coffeeType);
+  //   })
+  //   .then(() => this.context._pourCoffee(coffeeType.color));
   // }
 }
 
@@ -111,12 +123,10 @@ export class PourCoffee extends CoffeeMachineState {
     const { context } = config
     this.context = context
   }
-  //
-  // init(colorCoffee) {
-  //   console.log('наливааюю')
-  //
-  //   return this.context.delay(10000).then(() => {
-  //     this.context.emit('pouring', { colorCoffee });
+
+  // init(colorCoffee, ms = 1000) {
+  //   this.context.delay(ms).then(() => {
+  //     this.context.emit('coffeeReady', this.context.ingredientsAvailable);
   //   });
   // }
 }
