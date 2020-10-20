@@ -75,8 +75,8 @@ export class CoffeeMachineInterface extends Publisher {
       whipping: () => {
         console.log('взбиваю 🌀...');
       },
-      pouring: ({ colorCoffee }) => {
-        this.startPouringDrinkAnimation(9500, colorCoffee);
+      pouring: ({ colorCoffee, ms }) => {
+        this.startPouringDrinkAnimation(ms, colorCoffee);
         this._audioManager.play('pouringCoffeeSound')
         console.log('наливаю 🥛...');
       },

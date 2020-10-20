@@ -18,6 +18,9 @@ export class Off extends CoffeeMachineState {
     super('off', TurnOn);
     const { context } = config
     this.context = context;
+  }
+
+  init() {
     this.context.emit('off')
   }
 }
@@ -35,8 +38,6 @@ export class TurnOn extends CoffeeMachineState {
       coffeeTypes: this.context.coffeeTypes,
       ingredientsAvailable: this.context.ingredientsAvailable
     });
-
-    this.context.nextState()
   }
 }
 
@@ -115,30 +116,31 @@ export class BrewCoffee extends CoffeeMachineState {
 
 export class PourCoffee extends CoffeeMachineState {
   constructor(config) {
-    super('pourCoffee', CoffeeReady);
+    super('pourCoffee', Idle);
     const { context } = config
     this.context = context
   }
 
   init(colorCoffee, ms = 1000) {
+    this.context.emit('pouring', { colorCoffee, ms });
+
     return this.context.delay(ms).then(() => {
-      this.context.emit('pouring', { colorCoffee });
+      this.context.cupIsFull = true;
+      this.context.emit('coffeeReady', this.context.ingredientsAvailable)
     });
   }
 }
 
-export class CoffeeReady extends CoffeeMachineState {
+export class Idle extends CoffeeMachineState {
   constructor(config) {
-    super('coffeeReady', Idle);
+    super('idle', Prepare);
     const { context } = config
     this.context = context
-    this.context.emit('coffeeReady', this.ingredientsAvailable);
   }
-}
 
-export class Idle extends CoffeeMachineState {
-  constructor() {
-    super('idle', Prepare);
+  init(coffeeTypes) {
+    console.log('я свободен!')
+    this.context.emit('returnCoffeeTypes', coffeeTypes)
   }
 }
 

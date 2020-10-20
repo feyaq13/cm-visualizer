@@ -1,7 +1,8 @@
-import { CoffeeMachineState,
+import {
+  CoffeeMachineState,
   Off, TurnOn, Prepare, Ready, CoffeeSelected, WhipMilk, PourCoffee, BrewCoffee,
-  Idle, NoGrains, NoMilk, NoWater
-} from './states'
+  Idle, NoGrains, NoMilk, NoWater,
+} from './states';
 
 export class Publisher {
   constructor() {
@@ -31,11 +32,11 @@ export class CoffeeMachine extends Publisher {
   constructor(config) {
     super();
     const { dev, interfaces, recipes } = config;
-    this.state = new Off()
+    this.state = new Off({context: this} )
     this._isDev = dev;
     this.isOn = false;
-    // this._cupIsFull = interfaces[0]._cup._isFull;
-    this.cupIsFull = false
+    this.cupIsFull = interfaces[0]._cup._isFull;
+    // this.cupIsFull = false
     this.isClean = true;
     this.isBroken = false;
     this._recipes = recipes;
@@ -56,7 +57,7 @@ export class CoffeeMachine extends Publisher {
         //   this._getCoffeeTypes(this.coffeeTypes)
         // },
         // filledCup: () => {
-        //   this._cupIsFull = true;
+        //   this.cupIsFull = true;
         // }
       });
 
@@ -113,10 +114,6 @@ export class CoffeeMachine extends Publisher {
     this.emit('replenishmentOfIngredients', {amount, ingredientsAvailable: this._ingredientsAvailable})
   }
 
-  _getCoffeeTypes(coffeeTypes) {
-    this.emit('returnCoffeeTypes', coffeeTypes)
-  }
-
   nextState() {
     this.state = this.state.next({
       context: this
@@ -130,6 +127,7 @@ export class CoffeeMachine extends Publisher {
   }
 
   _prepare(delayMs) {
+    this._setState(Prepare)
     this.state.init(delayMs);
   }
 
@@ -148,30 +146,37 @@ export class CoffeeMachine extends Publisher {
       this.state.name !== 'brewCoffee' &&
       this.state.name !== 'pourCoffee' ) {
       this._setState(Off);
+      this.state.init()
       this.isOn = false;
     }
   }
 
   async _makeCoffee(coffeeName) {
     this._setState(CoffeeSelected);
-    this.emit('checking', this._cupIsFull);
-    this._cupIsFull = false;
+    this.emit('checking', this.cupIsFull);
 
     if (this.ingredientsAreSufficient()) {
       const coffeeType = this._searchTargetRecipe(coffeeName);
+
       await this._brewCoffee(coffeeType)
 
         if (coffeeType.recipe.withMilk) {
           await this._whipMilk()
         }
 
-      await this._pourCoffee(coffeeType.color);
+      await this._pourCoffee(coffeeType.color)
+      await this._coffeeReady()
     }
+  }
+
+  _coffeeReady(coffeeType, ms = 0) {
+    this._setState(Idle)
+    return this.state.init(coffeeType)
   }
 
   _brewCoffee(coffeeType, ms = 4000) {
     this._setState(BrewCoffee)
-    this.state.init(coffeeType, ms)
+    return this.state.init(coffeeType, ms)
   }
 
   consumeIngredients(coffeeType) {
@@ -181,13 +186,12 @@ export class CoffeeMachine extends Publisher {
     this.ingredientsAvailable.grain -= grainRequired;
     this.ingredientsAvailable.water -= waterRequired;
     this._wasteAmount += grainRequired;
-
     this.isClean = false;
   }
 
-  _pourCoffee(colorCoffee, ms = 10000) {
+  _pourCoffee(colorCoffee, ms = 2000) {
     this._setState(PourCoffee)
-    this.state.init(colorCoffee, ms)
+    return this.state.init(colorCoffee, ms)
   }
 
   delay(ms) {
@@ -198,6 +202,8 @@ export class CoffeeMachine extends Publisher {
 
   _whipMilk(ms = 6000) {
     this._setState(WhipMilk)
-    this.state.init(ms)
+    return this.state.init(ms)
   }
 }
+
+
