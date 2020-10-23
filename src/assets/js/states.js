@@ -74,8 +74,11 @@ export class Ready extends CoffeeMachineState {
 }
 
 export class CoffeeSelected extends CoffeeMachineState {
-  constructor() {
+  constructor(config) {
     super('coffeeSelected', WhipMilk);
+    const { context } = config
+    this.context = context
+    this.context.emit('checking', this.context.cupIsFull);
   }
 }
 
@@ -139,7 +142,6 @@ export class Idle extends CoffeeMachineState {
   }
 
   init(coffeeTypes) {
-    console.log('я свободен!')
     this.context.emit('returnCoffeeTypes', coffeeTypes)
   }
 }

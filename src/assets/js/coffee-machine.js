@@ -48,13 +48,10 @@ export class CoffeeMachine extends Publisher {
       machineInterface.onEvents({
         switchOn: () => this._turnOn(),
         switchOff: () => this._turnOff(),
+        coffeeSelected: (coffeeName) => this._makeCoffee(coffeeName),
         // cleanUp: () => this.clean(),
-        coffeeSelected: (coffeeName) => this._makeCoffee(coffeeName)
         // fillingContainer: ({amountOf, containerName}) => {
         //   this._replenishmentOfIngredients(amountOf, containerName)
-        // },
-        // filledAllContainers: () => {
-        //   this._getCoffeeTypes(this.coffeeTypes)
         // },
         // filledCup: () => {
         //   this.cupIsFull = true;
@@ -145,6 +142,7 @@ export class CoffeeMachine extends Publisher {
       this.state.name !== 'whipMilk' &&
       this.state.name !== 'brewCoffee' &&
       this.state.name !== 'pourCoffee' ) {
+      debugger
       this._setState(Off);
       this.state.init()
       this.isOn = false;
@@ -153,20 +151,16 @@ export class CoffeeMachine extends Publisher {
 
   async _makeCoffee(coffeeName) {
     this._setState(CoffeeSelected);
-    this.emit('checking', this.cupIsFull);
+    const coffeeType = this._searchTargetRecipe(coffeeName);
 
-    if (this.ingredientsAreSufficient()) {
-      const coffeeType = this._searchTargetRecipe(coffeeName);
+    await this._brewCoffee(coffeeType)
 
-      await this._brewCoffee(coffeeType)
-
-        if (coffeeType.recipe.withMilk) {
-          await this._whipMilk()
-        }
-
-      await this._pourCoffee(coffeeType.color)
-      await this._coffeeReady()
+    if (coffeeType.recipe.withMilk) {
+      await this._whipMilk()
     }
+
+    await this._pourCoffee(coffeeType.color)
+    await this._coffeeReady()
   }
 
   _coffeeReady(coffeeType, ms = 0) {

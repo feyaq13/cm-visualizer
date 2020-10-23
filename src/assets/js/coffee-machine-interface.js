@@ -21,7 +21,9 @@ export class CoffeeMachineInterface extends Publisher {
       [this._switchOnButton, ...this._ingredientContainers, this._cup._cupElement]
     );
     this.boundhandlerOnSelectedCoffee = this.handlerOnSelectedCoffee.bind(this)
-    this.setupControlsHandlers();
+    this.boundclickButtonsSound = this._audioManager.play.bind(this._audioManager, 'clickButtonsSound')
+    this.setupClickButtonsSound()
+    this.setupSwitchOnHandler()
   }
 
   setupEvents(machine) {
@@ -95,8 +97,8 @@ export class CoffeeMachineInterface extends Publisher {
       },
       off: () => {
         this.removeOnMakeCoffeeTypesOnEventClick()
+        this.setupSwitchOnHandler()
         this._switchOnButton.setAttribute('aria-checked', 'false');
-        this.setupControlsHandlers();
         console.clear()
       },
       checking: (cupIsFull) => {
@@ -208,18 +210,21 @@ export class CoffeeMachineInterface extends Publisher {
     this._cup._pouredLiquidElement.style.animationDuration = `${ms}ms`;
   }
 
-  setupControlsHandlers() {
+  setupClickButtonsSound() {
     Array.prototype.forEach.call(this._buttonElements, (button) =>
-      button.addEventListener('click', this._audioManager.play.bind(this._audioManager, 'clickButtonsSound'))
+      button.addEventListener('click', this.boundclickButtonsSound)
     );
 
-    this._switchOnButton.addEventListener('click', () => {
-      this._eventHandlers.switchOn.forEach((handler) => handler());
-    }, {once: true});
     //
     // document.getElementsByClassName('button-clean-waste')[0]
     // .addEventListener('click',
     //   () => this._eventHandlers.cleanUp.forEach((handler) => handler()));
+  }
+
+  setupSwitchOnHandler() {
+    this._switchOnButton.addEventListener('click', () => {
+      this._eventHandlers.switchOn.forEach((handler) => handler());
+    }, {once: true});
   }
 
   setupSwitchOffHandler() {
