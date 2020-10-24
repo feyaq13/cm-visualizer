@@ -3,7 +3,7 @@ import { CoffeeMachine } from './coffee-machine';
 
 const myCoffeeMachine = new CoffeeMachine({
   dev: false,
-  interfaces: [new CoffeeMachineInterface( /*{hints: true}*/ )],
+  interfaces: [new CoffeeMachineInterface({ hints: false })],
   recipes: [
     {
       coffeeName: 'cappuccino',
@@ -38,4 +38,4 @@ const myCoffeeMachine = new CoffeeMachine({
   ],
 });
 
-window.cm = myCoffeeMachine;
+window['cm'] = myCoffeeMachine;

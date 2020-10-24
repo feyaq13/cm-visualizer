@@ -1,5 +1,7 @@
 export class Hints {
-  constructor(listElement) {
+  private listElement: Array<HTMLCollection>;
+
+  constructor(listElement: Array<HTMLCollection>) {
     this.listElement = listElement
     this.showHints()
   }

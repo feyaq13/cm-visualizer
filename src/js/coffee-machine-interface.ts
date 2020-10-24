@@ -1,26 +1,40 @@
 import { Hints } from './coffee-machine-hints';
 import { AudioManager } from './audio-manager';
-import { Publisher } from './coffee-machine';
 import { CoffeeCup } from './coffee-cup';
+import { Publisher } from './publisher';
+import { CoffeeMachine } from './coffee-machine';
 
-export class CoffeeMachineInterface extends Publisher {
-  constructor(hints) {
+export interface Interface {
+  onEvents(param: { [key: string]: Function });
+  setupEvents(param: CoffeeMachine);
+}
+
+export class CoffeeMachineInterface extends Publisher implements Interface {
+  private audioManager: AudioManager;
+  private buttonElements: HTMLCollectionOf<Element>;
+  private switchOnButton: Element;
+  private ingredientContainers: HTMLCollectionOf<Element>;
+  private buttonElementsNav: Element;
+  private cup: CoffeeCup;
+  // private hinter: Hints;
+  private boundHandlerOnSelectedCoffee: (e: Event) => void;
+  constructor({ hints }: { hints?: boolean }) {
     super();
-    this._audioManager = new AudioManager({ volume: 0.5 });
-    this._buttonElements = document.getElementsByClassName('button');
-    this._switchOnButton = Array.prototype.filter.call(this._buttonElements, (button) =>
+    this.audioManager = new AudioManager({ volume: 0.5 });
+    this.buttonElements = document.getElementsByClassName('button');
+    this.switchOnButton = Array.prototype.filter.call(this.buttonElements, (button) =>
       button.classList.contains('button_is-switch-on'),
     )[0];
-    this._ingredientContainers = document.getElementsByClassName('container');
-    this._buttonElementsNav = document.getElementsByClassName('coffee-list')[0];
-    this._cup = new CoffeeCup({
-      _cupElement: document.getElementsByClassName('coffee-cup-factor')[0],
-      _pouredLiquidElement: document.getElementsByClassName('coffee-cup')[0]
+    this.ingredientContainers = document.getElementsByClassName('container');
+    this.buttonElementsNav = document.getElementsByClassName('coffee-list')[0];
+    this.cup = new CoffeeCup({
+      cupElement: document.getElementsByClassName('coffee-cup-factor')[0],
+      pouredLiquidElement: document.getElementsByClassName('coffee-cup')[0],
     });
-    this._hinter = typeof hints === 'undefined' ? null : new Hints(
-      [this._switchOnButton, ...this._ingredientContainers, this._cup._cupElement]
-    );
-    this.boundhandlerOnSelectedCoffee = this.handlerOnSelectedCoffee.bind(this)
+    // this.hinter = hints ? new Hints(
+    //   [this._switchOnButton, ...this._ingredientContainers, this._cup.cupElement],
+    // ) : null;
+    this.boundHandlerOnSelectedCoffee = this.handlerOnSelectedCoffee.bind(this);
     this.setupControlsHandlers();
   }
 
@@ -29,13 +43,13 @@ export class CoffeeMachineInterface extends Publisher {
       coffeeReady: (ingredientsAvailable) => {
         this.stopAnimation('busy');
         this.enableAllButtons();
-        this._audioManager.stop('grindCoffeeBeansSound');
+        this.audioManager.stop('grindCoffeeBeansSound');
         this.setupOnMakeCoffeeTypesOnEventClick();
         console.log('Кофе готов!');
-        this._audioManager.stop('pouringCoffeeSound')
+        this.audioManager.stop('pouringCoffeeSound');
         // this.emit('filledCup')
         this.showIngredientsAvailable(ingredientsAvailable);
-        this.renderIngredientsAvailable(ingredientsAvailable)
+        this.renderIngredientsAvailable(ingredientsAvailable);
       },
       // noMilk: () => {
       //   console.log('кажется нет молока');
@@ -61,9 +75,9 @@ export class CoffeeMachineInterface extends Publisher {
       //   this.renderIngredientsAvailable(data.ingredientsAvailable)
       // },
       returnCoffeeTypes: (coffeeTypes) => {
-        this.showTypesCoffee(coffeeTypes)
-        this.enableAllButtons()
-        this.setupOnMakeCoffeeTypesOnEventClick()
+        this.showTypesCoffee(coffeeTypes);
+        this.enableAllButtons();
+        this.setupOnMakeCoffeeTypesOnEventClick();
       },
       // noWater: () => {
       //   console.log('кажется нет воды');
@@ -77,7 +91,7 @@ export class CoffeeMachineInterface extends Publisher {
       },
       pouring: ({ colorCoffee, ms }) => {
         this.startPouringDrinkAnimation(ms, colorCoffee);
-        this._audioManager.play('pouringCoffeeSound')
+        this.audioManager.play('pouringCoffeeSound');
         console.log('наливаю 🥛...');
       },
       cleaning: () => {
@@ -90,45 +104,44 @@ export class CoffeeMachineInterface extends Publisher {
         this.showTypesCoffee(coffeeTypes);
         this.stopAnimation('busy');
         this.setupOnMakeCoffeeTypesOnEventClick();
-        this.setupSwitchOffHandler()
+        this.setupSwitchOffHandler();
         console.log('я готова делать кофе!');
       },
       off: () => {
-        this.removeOnMakeCoffeeTypesOnEventClick()
-        this._switchOnButton.setAttribute('aria-checked', 'false');
+        this.removeOnMakeCoffeeTypesOnEventClick();
+        this.switchOnButton.setAttribute('aria-checked', 'false');
         this.setupControlsHandlers();
-        console.clear()
+        console.clear();
       },
       checking: (cupIsFull) => {
         console.log('проверяю...');
         if (cupIsFull) {
-          this._cup._pouredLiquidElement.classList.remove('pouring-mode');
+          this.cup.pouredLiquidElement.classList.remove('pouring-mode');
         }
         this.startAnimation('busy');
       },
       brewing: ({ coffeeType }) => {
-        this._audioManager.play('grindCoffeeBeansSound')
+        this.audioManager.play('grindCoffeeBeansSound');
         console.log(`завариваю ${coffeeType.coffeeName}`);
       },
       welcome: ({ coffeeTypes, ingredientsAvailable }) =>
         this.greeting({
-        coffeeTypes, ingredientsAvailable
-      })
+          coffeeTypes,
+          ingredientsAvailable,
+        }),
     });
   }
 
   renderIngredientsAvailable(ingredientsAvailable) {
-    Array.prototype.map.call(document.getElementsByClassName('container'),
-      (container) => {
-        for (const name of Reflect.ownKeys(ingredientsAvailable)) {
-          const ingredient = container.getElementsByClassName(`${name}`)[0]
-          if (ingredient) {
-            ingredient.style.clipPath =
-              `polygon(0 ${100 - ingredientsAvailable[name]}%,
-               100% ${100 - ingredientsAvailable[name]}%, 100% 100%, 0 100%)`
-          }
+    Array.prototype.map.call(document.getElementsByClassName('container'), (container) => {
+      for (const name of Reflect.ownKeys(ingredientsAvailable)) {
+        const ingredient = container.getElementsByClassName(`${String(name)}`)[0];
+        if (ingredient) {
+          ingredient.style.clipPath = `polygon(0 ${100 - ingredientsAvailable[name]}%,
+               100% ${100 - ingredientsAvailable[name]}%, 100% 100%, 0 100%)`;
         }
-    })
+      }
+    });
   }
 
   // fillContainer(containerName) {
@@ -154,68 +167,70 @@ export class CoffeeMachineInterface extends Publisher {
     const itemsIngredient = listIngredients.children;
     for (const ingName of Object.keys(ingredientsAvailable)) {
       if (ingredientsAvailable.hasOwnProperty(ingName)) {
-        Array.prototype.forEach.call(itemsIngredient, item =>
-          item.dataset.name === ingName ? item.textContent = `${ingName}: ${ingredientsAvailable[ingName]}` :  ''
-        )
+        Array.prototype.forEach.call(itemsIngredient, (item) =>
+          item.dataset.name === ingName ? (item.textContent = `${ingName}: ${ingredientsAvailable[ingName]}`) : '',
+        );
       }
     }
   }
 
   setupOnMakeCoffeeTypesOnEventClick() {
-    this._buttonElementsNav.addEventListener('click', this.boundhandlerOnSelectedCoffee);
+    this.buttonElementsNav.addEventListener('click', this.boundHandlerOnSelectedCoffee);
   }
 
   removeOnMakeCoffeeTypesOnEventClick() {
-    this._buttonElementsNav.removeEventListener('click', this.boundhandlerOnSelectedCoffee);
+    this.buttonElementsNav.removeEventListener('click', this.boundHandlerOnSelectedCoffee);
   }
 
   handlerOnSelectedCoffee(e) {
-    console.clear()
+    console.clear();
     if (e.target.type === 'button') {
       this.startAnimation('busy');
       this.disableAllButtons(e);
-      this.removeOnMakeCoffeeTypesOnEventClick()
+      this.removeOnMakeCoffeeTypesOnEventClick();
 
       this.emit('coffeeSelected', e.target.textContent);
     }
   }
 
   disableAllButtons(e) {
-    Array.prototype.forEach.call(
-      e.currentTarget.getElementsByTagName('button'),
-      (button) => (button.disabled = true));
+    Array.prototype.forEach.call(e.currentTarget.getElementsByTagName('button'), (button) => (button.disabled = true));
   }
 
   enableAllButtons() {
     Array.prototype.forEach.call(
-      this._buttonElementsNav.getElementsByTagName('button'),
+      this.buttonElementsNav.getElementsByTagName('button'),
       (button) => (button.disabled = false),
     );
   }
 
   startAnimation(type) {
-    this._switchOnButton.classList.add(`${type}-mode`);
+    this.switchOnButton.classList.add(`${type}-mode`);
   }
 
   stopAnimation(type) {
-    this._switchOnButton.setAttribute('aria-checked', 'true');
-    this._switchOnButton.classList.remove(`${type}-mode`);
+    this.switchOnButton.setAttribute('aria-checked', 'true');
+    this.switchOnButton.classList.remove(`${type}-mode`);
   }
 
   startPouringDrinkAnimation(ms, colorCoffee) {
-    this._cup._pouredLiquidElement.style.fill = colorCoffee;
-    this._cup._pouredLiquidElement.classList.add('pouring-mode');
-    this._cup._pouredLiquidElement.style.animationDuration = `${ms}ms`;
+    this.cup.pouredLiquidElement.style.fill = colorCoffee;
+    this.cup.pouredLiquidElement.classList.add('pouring-mode');
+    this.cup.pouredLiquidElement.style.animationDuration = `${ms}ms`;
   }
 
   setupControlsHandlers() {
-    Array.prototype.forEach.call(this._buttonElements, (button) =>
-      button.addEventListener('click', this._audioManager.play.bind(this._audioManager, 'clickButtonsSound'))
+    Array.prototype.forEach.call(this.buttonElements, (button) =>
+      button.addEventListener('click', this.audioManager.play.bind(this.audioManager, 'clickButtonsSound')),
     );
 
-    this._switchOnButton.addEventListener('click', () => {
-      this._eventHandlers.switchOn.forEach((handler) => handler());
-    }, {once: true});
+    this.switchOnButton.addEventListener(
+      'click',
+      () => {
+        this.eventHandlers.switchOn.forEach((handler) => handler());
+      },
+      { once: true },
+    );
     //
     // document.getElementsByClassName('button-clean-waste')[0]
     // .addEventListener('click',
@@ -223,9 +238,13 @@ export class CoffeeMachineInterface extends Publisher {
   }
 
   setupSwitchOffHandler() {
-    this._switchOnButton.addEventListener('click', () => {
-      this._eventHandlers.switchOff.forEach((handler) => handler());
-    }, {once: true});
+    this.switchOnButton.addEventListener(
+      'click',
+      () => {
+        this.eventHandlers.switchOff.forEach((handler) => handler());
+      },
+      { once: true },
+    );
   }
 
   // showContainerStatus(containerName) {
@@ -250,8 +269,8 @@ export class CoffeeMachineInterface extends Publisher {
   }
 
   showTypesCoffee(coffeeTypes) {
-    if (this._buttonElementsNav.childElementCount === 0) {
-      const coffeeListElement = this._buttonElementsNav;
+    if (this.buttonElementsNav.childElementCount === 0) {
+      const coffeeListElement = this.buttonElementsNav;
 
       coffeeTypes.forEach((coffeeName) => {
         const buttonElement = document.createElement('button');
