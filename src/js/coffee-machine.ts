@@ -10,13 +10,13 @@ import {
   WhipMilkCmState,
 } from './states';
 import { Publisher } from './publisher';
-import { InterfacePublisher } from './coffee-machine-interface';
 import { CoffeeType } from './recipe.interface';
 import { delay } from './utils';
+import { AbstractCoffeeMachineUI } from './coffee-machine-gui';
 
 interface CoffeeMachineParams {
   dev: boolean;
-  interfaces: InterfacePublisher[];
+  interfaces: AbstractCoffeeMachineUI[];
   recipes: CoffeeType[];
 }
 
@@ -26,30 +26,7 @@ interface Ingredients {
   water: number;
 }
 
-export enum CoffeeMachineEvents {
-  CoffeeReady = 'coffeeReady',
-  NoMilk = 'noMilk',
-  NoGrains = 'noGrains',
-  NoWater = 'noWater',
-  ReplenishmentOfIngredients = 'replenishmentOfIngredients',
-  ReturnCoffeeTypes = 'returnCoffeeTypes',
-  Whipping = 'whipping',
-  Pouring = 'pouring',
-  Cleaning = 'cleaning',
-  Clear = 'clear',
-  Ready = 'ready',
-  Off = 'off',
-  Checking = 'checking',
-  Brewing = 'brewing',
-  Welcome = 'welcome'
-}
-
-export interface CoffeeMachinePublisher {
-  onEvents(param: { [key in CoffeeMachineEvents]?: Function });
-  on(event: CoffeeMachineEvents, handler: Function)
-}
-
-export class CoffeeMachine extends Publisher implements CoffeeMachinePublisher {
+export class CoffeeMachine extends Publisher {
   isOn: boolean;
   coffeeTypes: string[];
   ingredientsAvailable: Ingredients;
@@ -90,11 +67,11 @@ export class CoffeeMachine extends Publisher implements CoffeeMachinePublisher {
   }
 
   private clean() {
-    this.emit(CoffeeMachineEvents.Cleaning);
+    this.emit('cleaning');
 
     if (this.wasteAmount >= 50 && this.wasteAmount <= 100) {
       this.wasteAmount = 0;
-      this.emit(CoffeeMachineEvents.Clear);
+      this.emit('clear');
     }
 
     this.isClean = true;
@@ -120,7 +97,7 @@ export class CoffeeMachine extends Publisher implements CoffeeMachinePublisher {
 
   prepare(delayMs = 2000) {
     this.setState(PrepareCmState);
-    this.emit(CoffeeMachineEvents.Checking, this.cupIsFull);
+    this.emit('checking', this.cupIsFull);
 
     delay(delayMs).then(() => {
       if (!this.isClean) {
@@ -133,22 +110,22 @@ export class CoffeeMachine extends Publisher implements CoffeeMachinePublisher {
         this.setState(InsufficientIngredientsCmState);
 
         if (milk) {
-          this.emit(CoffeeMachineEvents.NoMilk);
+          this.emit('noMilk');
         }
 
         if (grain) {
-          this.emit(CoffeeMachineEvents.NoGrains);
+          this.emit('noGrains');
         }
 
         if (water) {
-          this.emit(CoffeeMachineEvents.NoWater);
+          this.emit('noWater');
         }
 
         return;
       }
 
       this.setState(ReadyCmState);
-      this.emit(CoffeeMachineEvents.Ready, this.coffeeTypes);
+      this.emit('ready', this.coffeeTypes);
     });
   }
 
@@ -162,7 +139,7 @@ export class CoffeeMachine extends Publisher implements CoffeeMachinePublisher {
 
   async makeCoffee(coffeeName) {
     this.setState(CoffeeSelectedCmState);
-    this.emit(CoffeeMachineEvents.Checking, this.cupIsFull);
+    this.emit('checking', this.cupIsFull);
 
     const coffeeType = this.searchTargetRecipe(coffeeName);
 
@@ -178,12 +155,12 @@ export class CoffeeMachine extends Publisher implements CoffeeMachinePublisher {
 
   private coffeeReady() {
     this.setState(ReadyCmState);
-    this.emit(CoffeeMachineEvents.ReturnCoffeeTypes, this.coffeeTypes);
+    this.emit('returnCoffeeTypes', this.coffeeTypes);
   }
 
   private brewCoffee(coffeeType, ms = 4000) {
     this.setState(BrewCmState);
-    this.emit(CoffeeMachineEvents.Brewing, { coffeeType });
+    this.emit('brewing', { coffeeType });
 
     return delay(ms).then(() => {
       this.consumeIngredients(coffeeType);
@@ -202,11 +179,11 @@ export class CoffeeMachine extends Publisher implements CoffeeMachinePublisher {
 
   private pourCoffee(colorCoffee, ms = 2000) {
     this.setState(PourCoffeeCmState);
-    this.emit(CoffeeMachineEvents.Pouring, { colorCoffee, ms });
+    this.emit('pouring', { colorCoffee, ms });
 
     return delay(ms).then(() => {
       this.cupIsFull = true;
-      this.emit(CoffeeMachineEvents.CoffeeReady, this.ingredientsAvailable);
+      this.emit('coffeeReady', this.ingredientsAvailable);
     });
   }
 
@@ -214,9 +191,9 @@ export class CoffeeMachine extends Publisher implements CoffeeMachinePublisher {
     this.setState(WhipMilkCmState);
     return delay(ms).then(() => {
       if (this.ingredientsAvailable.milk > 0) {
-        this.emit(CoffeeMachineEvents.Whipping);
+        this.emit('whipping');
       } else {
-        this.emit(CoffeeMachineEvents.NoMilk);
+        this.emit('noMilk');
       }
     });
   }

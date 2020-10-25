@@ -1,9 +1,9 @@
-import { CoffeeMachineInterface } from './coffee-machine-interface';
+import { CoffeeMachineGUI } from './coffee-machine-gui';
 import { CoffeeMachine } from './coffee-machine';
 
 const myCoffeeMachine = new CoffeeMachine({
   dev: false,
-  interfaces: [new CoffeeMachineInterface({ hints: false })],
+  interfaces: [new CoffeeMachineGUI({ hints: false })],
   recipes: [
     {
       coffeeName: 'cappuccino',
