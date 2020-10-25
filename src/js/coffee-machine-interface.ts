@@ -2,14 +2,20 @@ import { Hints } from './coffee-machine-hints';
 import { AudioManager } from './audio-manager';
 import { CoffeeCup } from './coffee-cup';
 import { Publisher } from './publisher';
-import { CoffeeMachine } from './coffee-machine';
+import { CoffeeMachineEvents, CoffeeMachinePublisher } from './coffee-machine';
 
-export interface Interface {
-  onEvents(param: { [key: string]: Function });
-  setupEvents(param: CoffeeMachine);
+export enum CoffeeMachineInterfaceEvents {
+  SwitchOn = 'switchOn',
+  SwitchOff = 'switchOff',
+  CoffeeSelected = 'coffeeSelected',
 }
 
-export class CoffeeMachineInterface extends Publisher implements Interface {
+export interface InterfacePublisher {
+  onEvents(param: { [key in CoffeeMachineInterfaceEvents]?: Function });
+  setupEvents(machine: CoffeeMachinePublisher);
+}
+
+export class CoffeeMachineInterface extends Publisher implements InterfacePublisher {
   private audioManager: AudioManager;
   private buttonElements: HTMLCollectionOf<Element>;
   private switchOnButton: Element;
@@ -18,6 +24,7 @@ export class CoffeeMachineInterface extends Publisher implements Interface {
   private cup: CoffeeCup;
   // private hinter: Hints;
   private boundHandlerOnSelectedCoffee: (e: Event) => void;
+
   constructor({ hints }: { hints?: boolean }) {
     super();
     this.audioManager = new AudioManager({ volume: 0.5 });
@@ -38,9 +45,9 @@ export class CoffeeMachineInterface extends Publisher implements Interface {
     this.setupControlsHandlers();
   }
 
-  setupEvents(machine) {
+  setupEvents(machine: CoffeeMachinePublisher) {
     machine.onEvents({
-      coffeeReady: (ingredientsAvailable) => {
+      [CoffeeMachineEvents.CoffeeReady]: (ingredientsAvailable) => {
         this.stopAnimation('busy');
         this.enableAllButtons();
         this.audioManager.stop('grindCoffeeBeansSound');
@@ -51,80 +58,73 @@ export class CoffeeMachineInterface extends Publisher implements Interface {
         this.showIngredientsAvailable(ingredientsAvailable);
         this.renderIngredientsAvailable(ingredientsAvailable);
       },
-      // noMilk: () => {
-      //   console.log('кажется нет молока');
-      //   this.stopAnimation('busy');
-      //   this.startAnimation('error');
-      //   this.showContainerStatus('milk');
-      //   this.fillContainer('milk');
-      // },
-      // noGrains: () => {
-      //   console.log('нет зерен');
-      //   this.stopAnimation('busy');
-      //   this.startAnimation('error');
-      //   this.showContainerStatus('grain');
-      //   this.fillContainer('grain');
-      // },
-      // replenishmentOfIngredients: (data) => {
-      //   if (Object.values(data.ingredientsAvailable).every(ingredientAmount => ingredientAmount > 10)) {
-      //     this.stopAnimation('error');
-      //     this._emit('filledAllContainers')
-      //   }
-      //
-      //   this.showIngredientsAvailable(data.ingredientsAvailable);
-      //   this.renderIngredientsAvailable(data.ingredientsAvailable)
-      // },
-      returnCoffeeTypes: (coffeeTypes) => {
+      [CoffeeMachineEvents.NoMilk]: () => {
+        console.log('кажется нет молока');
+        this.stopAnimation('busy');
+        this.startAnimation('error');
+        // this.showContainerStatus('milk');
+        // this.fillContainer('milk');
+      },
+      [CoffeeMachineEvents.NoGrains]: () => {
+        console.log('нет зерен');
+        this.stopAnimation('busy');
+        this.startAnimation('error');
+        // this.showContainerStatus('grain');
+        // this.fillContainer('grain');
+      },
+      [CoffeeMachineEvents.ReplenishmentOfIngredients]: (data) => {
+        if (Object.values(data.ingredientsAvailable).every(ingredientAmount => ingredientAmount > 10)) {
+          this.stopAnimation('error');
+          // this._emit('filledAllContainers')
+        }
+
+        this.showIngredientsAvailable(data.ingredientsAvailable);
+        this.renderIngredientsAvailable(data.ingredientsAvailable)
+      },
+      [CoffeeMachineEvents.ReturnCoffeeTypes]: (coffeeTypes) => {
         this.showTypesCoffee(coffeeTypes);
         this.enableAllButtons();
         this.setupOnMakeCoffeeTypesOnEventClick();
       },
-      // noWater: () => {
-      //   console.log('кажется нет воды');
-      //   this.stopAnimation('busy');
-      //   this.startAnimation('error');
-      //   this.showContainerStatus('water')
-      //   this.fillContainer('water')
-      // },
-      whipping: () => {
+      [CoffeeMachineEvents.Whipping]: () => {
         console.log('взбиваю 🌀...');
       },
-      pouring: ({ colorCoffee, ms }) => {
+      [CoffeeMachineEvents.Pouring]: ({ colorCoffee, ms }) => {
         this.startPouringDrinkAnimation(ms, colorCoffee);
         this.audioManager.play('pouringCoffeeSound');
         console.log('наливаю 🥛...');
       },
-      cleaning: () => {
+      [CoffeeMachineEvents.Cleaning]: () => {
         console.log('очищаю...');
       },
-      clear: () => {
+      [CoffeeMachineEvents.Clear]: () => {
         console.log('очистил 🧹');
       },
-      ready: (coffeeTypes) => {
+      [CoffeeMachineEvents.Ready]: (coffeeTypes) => {
         this.showTypesCoffee(coffeeTypes);
         this.stopAnimation('busy');
         this.setupOnMakeCoffeeTypesOnEventClick();
         this.setupSwitchOffHandler();
         console.log('я готова делать кофе!');
       },
-      off: () => {
+      [CoffeeMachineEvents.Off]: () => {
         this.removeOnMakeCoffeeTypesOnEventClick();
         this.switchOnButton.setAttribute('aria-checked', 'false');
         this.setupControlsHandlers();
         console.clear();
       },
-      checking: (cupIsFull) => {
+      [CoffeeMachineEvents.Checking]: (cupIsFull) => {
         console.log('проверяю...');
         if (cupIsFull) {
           this.cup.pouredLiquidElement.classList.remove('pouring-mode');
         }
         this.startAnimation('busy');
       },
-      brewing: ({ coffeeType }) => {
+      [CoffeeMachineEvents.Brewing]: ({ coffeeType }) => {
         this.audioManager.play('grindCoffeeBeansSound');
         console.log(`завариваю ${coffeeType.coffeeName}`);
       },
-      welcome: ({ coffeeTypes, ingredientsAvailable }) =>
+      [CoffeeMachineEvents.Welcome]: ({ coffeeTypes, ingredientsAvailable }) =>
         this.greeting({
           coffeeTypes,
           ingredientsAvailable,
@@ -189,7 +189,7 @@ export class CoffeeMachineInterface extends Publisher implements Interface {
       this.disableAllButtons(e);
       this.removeOnMakeCoffeeTypesOnEventClick();
 
-      this.emit('coffeeSelected', e.target.textContent);
+      this.emit(CoffeeMachineInterfaceEvents.CoffeeSelected, e.target.textContent);
     }
   }
 
