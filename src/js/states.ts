@@ -16,18 +16,18 @@ export abstract class CoffeeMachineState {
   onEnter(): void {}
 }
 
-export class OffState extends CoffeeMachineState {
+export class OffCoffeeMachineState extends CoffeeMachineState {
   onEnter() {
     this.coffeeMachine.isOn = false;
   }
 
   turnOff() {}
   turnOn() {
-    this.coffeeMachine.setState(StartState);
+    this.coffeeMachine.setState(StartCoffeeMachineState);
   }
 }
 
-export class StartState extends CoffeeMachineState {
+export class StartCoffeeMachineState extends CoffeeMachineState {
   onEnter() {
     this.coffeeMachine.isOn = true;
     this.coffeeMachine.emit('welcome', {
@@ -41,40 +41,40 @@ export class StartState extends CoffeeMachineState {
   turnOn() {}
 }
 
-export class PrepareCmState extends CoffeeMachineState {
+export class PrepareCoffeeMachineState extends CoffeeMachineState {
   turnOn() {}
   turnOff() {}
 }
 
-export class CoffeeSelectedCmState extends CoffeeMachineState {
+export class CoffeeSelectedCoffeeMachineState extends CoffeeMachineState {
   turnOn() {}
   turnOff() {}
 }
 
-export class ReadyCmState extends CoffeeMachineState {
+export class ReadyCoffeeMachineState extends CoffeeMachineState {
   turnOn() {}
   turnOff() {
-    this.coffeeMachine.setState(OffState);
+    this.coffeeMachine.setState(OffCoffeeMachineState);
   }
 }
-export class BrewCmState extends CoffeeMachineState {
+export class BrewCoffeeMachineState extends CoffeeMachineState {
   turnOn() {}
   turnOff() {}
 }
 
-export class WhipMilkCmState extends CoffeeMachineState {
+export class WhipMilkCoffeeMachineState extends CoffeeMachineState {
   turnOn() {}
   turnOff() {}
 }
 
-export class PourCoffeeCmState extends CoffeeMachineState {
+export class PourCoffeeCoffeeMachineState extends CoffeeMachineState {
   turnOn() {}
   turnOff() {}
 }
 
-export class InsufficientIngredientsCmState extends CoffeeMachineState {
+export class InsufficientIngredientsCoffeeMachineState extends CoffeeMachineState {
   turnOn() {}
   turnOff() {
-    this.coffeeMachine.setState(OffState);
+    this.coffeeMachine.setState(OffCoffeeMachineState);
   }
 }

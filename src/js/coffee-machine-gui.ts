@@ -1,12 +1,6 @@
-import { Hints } from './coffee-machine-hints';
 import { AudioManager } from './audio-manager';
 import { CoffeeCup } from './coffee-cup';
-import { Publisher } from './publisher';
-import { CoffeeMachine } from './coffee-machine';
-
-export abstract class AbstractCoffeeMachineUI extends Publisher {
-  abstract setupEvents(machine: CoffeeMachine);
-}
+import { AbstractCoffeeMachineUI } from './abstract-coffee-machine-ui';
 
 export class CoffeeMachineGUI extends AbstractCoffeeMachineUI {
   private audioManager: AudioManager;
@@ -104,7 +98,7 @@ export class CoffeeMachineGUI extends AbstractCoffeeMachineUI {
         this.removeOnMakeCoffeeTypesOnEventClick();
         this.switchOnButton.setAttribute('aria-checked', 'false');
         this.setupControlsHandlers();
-        console.clear();
+        console.log('\n\n\n\n\n\n\n\n');
       },
       'checking': (cupIsFull) => {
         console.log('проверяю...');

@@ -1,18 +1,18 @@
 import {
-  BrewCmState,
+  BrewCoffeeMachineState,
   CoffeeMachineState,
-  CoffeeSelectedCmState,
-  InsufficientIngredientsCmState,
-  OffState,
-  PourCoffeeCmState,
-  PrepareCmState,
-  ReadyCmState,
-  WhipMilkCmState,
+  CoffeeSelectedCoffeeMachineState,
+  InsufficientIngredientsCoffeeMachineState,
+  OffCoffeeMachineState,
+  PourCoffeeCoffeeMachineState,
+  PrepareCoffeeMachineState,
+  ReadyCoffeeMachineState,
+  WhipMilkCoffeeMachineState,
 } from './states';
 import { Publisher } from './publisher';
-import { CoffeeType } from './recipe.interface';
+import { CoffeeType } from './recipe';
 import { delay } from './utils';
-import { AbstractCoffeeMachineUI } from './coffee-machine-gui';
+import { AbstractCoffeeMachineUI } from './abstract-coffee-machine-ui';
 
 interface CoffeeMachineParams {
   dev: boolean;
@@ -41,7 +41,7 @@ export class CoffeeMachine extends Publisher {
   constructor(config: CoffeeMachineParams) {
     super();
     const { dev, interfaces, recipes } = config;
-    this.state = new OffState(this);
+    this.state = new OffCoffeeMachineState(this);
     this.isDev = dev;
     this.isOn = false;
     this.cupIsFull = false;
@@ -96,7 +96,7 @@ export class CoffeeMachine extends Publisher {
   }
 
   prepare(delayMs = 2000) {
-    this.setState(PrepareCmState);
+    this.setState(PrepareCoffeeMachineState);
     this.emit('checking', this.cupIsFull);
 
     delay(delayMs).then(() => {
@@ -107,7 +107,7 @@ export class CoffeeMachine extends Publisher {
       const { milk, grain, water } = this.getLowIngredients();
 
       if (milk || grain || water) {
-        this.setState(InsufficientIngredientsCmState);
+        this.setState(InsufficientIngredientsCoffeeMachineState);
 
         if (milk) {
           this.emit('noMilk');
@@ -124,7 +124,7 @@ export class CoffeeMachine extends Publisher {
         return;
       }
 
-      this.setState(ReadyCmState);
+      this.setState(ReadyCoffeeMachineState);
       this.emit('ready', this.coffeeTypes);
     });
   }
@@ -135,10 +135,11 @@ export class CoffeeMachine extends Publisher {
 
   private turnOff() {
     this.state.turnOff();
+    this.emit('off')
   }
 
   async makeCoffee(coffeeName) {
-    this.setState(CoffeeSelectedCmState);
+    this.setState(CoffeeSelectedCoffeeMachineState);
     this.emit('checking', this.cupIsFull);
 
     const coffeeType = this.searchTargetRecipe(coffeeName);
@@ -154,12 +155,12 @@ export class CoffeeMachine extends Publisher {
   }
 
   private coffeeReady() {
-    this.setState(ReadyCmState);
+    this.setState(ReadyCoffeeMachineState);
     this.emit('returnCoffeeTypes', this.coffeeTypes);
   }
 
   private brewCoffee(coffeeType, ms = 4000) {
-    this.setState(BrewCmState);
+    this.setState(BrewCoffeeMachineState);
     this.emit('brewing', { coffeeType });
 
     return delay(ms).then(() => {
@@ -178,7 +179,7 @@ export class CoffeeMachine extends Publisher {
   }
 
   private pourCoffee(colorCoffee, ms = 2000) {
-    this.setState(PourCoffeeCmState);
+    this.setState(PourCoffeeCoffeeMachineState);
     this.emit('pouring', { colorCoffee, ms });
 
     return delay(ms).then(() => {
@@ -188,7 +189,7 @@ export class CoffeeMachine extends Publisher {
   }
 
   private whipMilk(ms = 6000) {
-    this.setState(WhipMilkCmState);
+    this.setState(WhipMilkCoffeeMachineState);
     return delay(ms).then(() => {
       if (this.ingredientsAvailable.milk > 0) {
         this.emit('whipping');
