@@ -31,8 +31,7 @@ export class StartCoffeeMachineState extends CoffeeMachineState {
   onEnter() {
     this.coffeeMachine.isOn = true;
     this.coffeeMachine.emit('welcome', {
-      coffeeTypes: this.coffeeMachine.coffeeTypes,
-      ingredientsAvailable: this.coffeeMachine.ingredientsAvailable,
+      coffeeTypes: this.coffeeMachine.coffeeTypes
     });
     this.coffeeMachine.prepare(2000);
   }
@@ -73,6 +72,10 @@ export class PourCoffeeCoffeeMachineState extends CoffeeMachineState {
 }
 
 export class InsufficientIngredientsCoffeeMachineState extends CoffeeMachineState {
+  onEnter() {
+    this.coffeeMachine.emit('canOff');
+  }
+
   turnOn() {}
   turnOff() {
     this.coffeeMachine.setState(OffCoffeeMachineState);

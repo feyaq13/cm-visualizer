@@ -74,6 +74,12 @@ nav ul {
   display: flex;
   justify-content: center;
 
+  &.off {
+    .error-mode {
+      animation: none;
+    }
+  }
+
   @media (max-width: 680px) {
     flex-wrap: wrap;
   }

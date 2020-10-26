@@ -6,6 +6,7 @@ export class CoffeeMachineGUI extends AbstractCoffeeMachineUI {
   private audioManager: AudioManager;
   private buttonElements: HTMLCollectionOf<Element>;
   private switchOnButton: Element;
+  private coffeeMachineElement: Element;
   private ingredientContainers: HTMLCollectionOf<Element>;
   private buttonElementsNav: Element;
   private cup: CoffeeCup;
@@ -19,6 +20,7 @@ export class CoffeeMachineGUI extends AbstractCoffeeMachineUI {
     this.switchOnButton = Array.prototype.filter.call(this.buttonElements, (button) =>
       button.classList.contains('button_is-switch-on'),
     )[0];
+    this.coffeeMachineElement = document.getElementsByClassName('coffee-machine')[0]
     this.ingredientContainers = document.getElementsByClassName('container');
     this.buttonElementsNav = document.getElementsByClassName('coffee-list')[0];
     this.cup = new CoffeeCup({
@@ -41,32 +43,39 @@ export class CoffeeMachineGUI extends AbstractCoffeeMachineUI {
         this.setupOnMakeCoffeeTypesOnEventClick();
         console.log('Кофе готов!');
         this.audioManager.stop('pouringCoffeeSound');
-        // this.emit('filledCup')
         this.showIngredientsAvailable(ingredientsAvailable);
         this.renderIngredientsAvailable(ingredientsAvailable);
       },
-      'noMilk': () => {
-        console.log('кажется нет молока');
+      'noAnythingIngredient': () => {
         this.stopAnimation('busy');
         this.startAnimation('error');
-        // this.showContainerStatus('milk');
-        // this.fillContainer('milk');
+      },
+      'noMilk': () => {
+        console.log('кажется нет молока');
+        // this.stopAnimation('busy');
+        // this.startAnimation('error');
+        this.showContainerStatus('milk');
+        this.fillContainer('milk');
       },
       'noGrains': () => {
         console.log('нет зерен');
-        this.stopAnimation('busy');
-        this.startAnimation('error');
-        // this.showContainerStatus('grain');
-        // this.fillContainer('grain');
+        // this.stopAnimation('busy');
+        // this.startAnimation('error');
+        this.showContainerStatus('grain');
+        this.fillContainer('grain');
+      },
+      'noWater': () => {
+        console.log('нет воды');
+        // this.stopAnimation('busy');
+        // this.startAnimation('error');
+        this.showContainerStatus('water');
+        this.fillContainer('water');
       },
       'replenishmentOfIngredients': (data) => {
-        if (Object.values(data.ingredientsAvailable).every(ingredientAmount => ingredientAmount > 10)) {
+        if (Object.values(data).every(ingredientAmount => ingredientAmount > 10)) {
           this.stopAnimation('error');
-          // this._emit('filledAllContainers')
+          this.emit('filledAllContainers')
         }
-
-        this.showIngredientsAvailable(data.ingredientsAvailable);
-        this.renderIngredientsAvailable(data.ingredientsAvailable)
       },
       'returnCoffeeTypes': (coffeeTypes) => {
         this.showTypesCoffee(coffeeTypes);
@@ -87,6 +96,10 @@ export class CoffeeMachineGUI extends AbstractCoffeeMachineUI {
       'clear': () => {
         console.log('очистил 🧹');
       },
+      'canOff': () => {
+        // ???? //
+        this.setupSwitchOffHandler();
+      },
       'ready': (coffeeTypes) => {
         this.showTypesCoffee(coffeeTypes);
         this.stopAnimation('busy');
@@ -94,9 +107,13 @@ export class CoffeeMachineGUI extends AbstractCoffeeMachineUI {
         this.setupSwitchOffHandler();
         console.log('я готова делать кофе!');
       },
+      'on': () => {
+        this.coffeeMachineElement.classList.remove('off')
+      },
       'off': () => {
         this.removeOnMakeCoffeeTypesOnEventClick();
         this.switchOnButton.setAttribute('aria-checked', 'false');
+        this.coffeeMachineElement.classList.add('off');
         this.setupControlsHandlers();
         console.log('\n\n\n\n\n\n\n\n');
       },
@@ -111,11 +128,11 @@ export class CoffeeMachineGUI extends AbstractCoffeeMachineUI {
         this.audioManager.play('grindCoffeeBeansSound');
         console.log(`завариваю ${coffeeType.coffeeName}`);
       },
-      'welcome': ({ coffeeTypes, ingredientsAvailable }) =>
-        this.greeting({
-          coffeeTypes,
-          ingredientsAvailable,
-        }),
+      'welcome': (coffeeTypes) => this.greeting(coffeeTypes),
+      'init': (ingredientsAvailable) => {
+        this.showIngredientsAvailable(ingredientsAvailable);
+        this.renderIngredientsAvailable(ingredientsAvailable);
+      }
     });
   }
 
@@ -125,29 +142,39 @@ export class CoffeeMachineGUI extends AbstractCoffeeMachineUI {
         const ingredient = container.getElementsByClassName(`${String(name)}`)[0];
         if (ingredient) {
           ingredient.style.clipPath = `polygon(0 ${100 - ingredientsAvailable[name]}%,
-               100% ${100 - ingredientsAvailable[name]}%, 100% 100%, 0 100%)`;
+          100% ${100 - ingredientsAvailable[name]}%, 100% 100%, 0 100%)`;
         }
       }
     });
   }
 
-  // fillContainer(containerName) {
-  //   Array.prototype.find.call(
-  //     this._ingredientContainers,
-  //     (container => container.children[0].dataset.containerName === containerName)
-  //   )
-  //   .addEventListener('click', () => {
-  //     let amountOf = prompt('Сколько положить?', '100')
-  //     if (amountOf > 100 || amountOf === null) {
-  //       amountOf = 100;
-  //     }
-  //
-  //     this.showContainerStatus(containerName);
-  //     this._audioManager.play('fillingContainerSound');
-  //     // alert(`Пополнение в ${containerName}: ${amountOf}`)
-  //     this._emit('fillingContainer', {containerName, amountOf})
-  //   })
-  // }
+  fillContainer(containerName) {
+    Array.prototype.find.call(
+      this.ingredientContainers,
+      (container => container.children[0].dataset.containerName === containerName)
+    )
+    .addEventListener('click', () => {
+      let amountOf = +prompt('Сколько положить?', '100')
+      if (amountOf > 100 || amountOf === null) {
+        amountOf = 100;
+      }
+
+      this.renderInfoContainer(containerName, amountOf)
+
+      this.showContainerStatus(containerName);
+      this.audioManager.play('fillingContainerSound');
+      console.log(`Пополнение в ${containerName}: ${amountOf}`)
+      this.emit('filledContainer', { containerName, amountOf })
+    })
+  }
+
+  renderInfoContainer(containerName: string, amountOf: number) {
+    const container = <HTMLElement>document.getElementsByClassName(containerName)[0]
+    document.getElementsByClassName(`coffee-machine__${containerName}`)[0]
+      .textContent = String(containerName + ": " + amountOf);
+    container.style
+      .clipPath = `polygon(0 ${100 - amountOf}%, 100% ${100 - amountOf}%, 100% 100%, 0 100%)`;
+  }
 
   showIngredientsAvailable(ingredientsAvailable) {
     const listIngredients = document.getElementsByClassName('information')[0];
@@ -234,18 +261,23 @@ export class CoffeeMachineGUI extends AbstractCoffeeMachineUI {
     );
   }
 
-  // showContainerStatus(containerName) {
-  //   const targetContainer = Array.prototype.find.call(
-  //     document.getElementsByClassName('container-inner'),
-  //     (container) => container.dataset.containerName === containerName
-  //   )
-  //
-  //   targetContainer.classList.toggle('error-mode');
-  // }
+  showContainerStatus(containerName) {
+    const targetContainer = Array.prototype.find.call(
+      document.getElementsByClassName('container-inner'),
+      (container) => container.dataset.containerName === containerName
+    )
 
-  greeting({ coffeeTypes, ingredientsAvailable }) {
+    // в данном случае тоглить !!!! нецелесообразно !!!!
+
+    targetContainer.classList.toggle('error-mode');
+  }
+
+  showIngredients(ingredientsAvailable) {
     this.renderIngredientsAvailable(ingredientsAvailable);
     this.showIngredientsAvailable(ingredientsAvailable);
+  }
+
+  greeting({coffeeTypes}) {
     console.log(`
       Добро пожаловать!
       Ознакомьтесь, пожалуйста, с нашим меню:

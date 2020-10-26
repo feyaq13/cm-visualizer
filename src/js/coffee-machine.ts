@@ -49,17 +49,26 @@ export class CoffeeMachine extends Publisher {
     this.recipes = recipes;
     this.coffeeTypes = this.recipes.map(({ coffeeName }) => coffeeName);
     this.wasteAmount = 0;
-    this.ingredientsAvailable = { grain: 100, water: 100, milk: 100 };
+    this.ingredientsAvailable = { grain: 10, water: 100, milk: 10 };
 
     interfaces.forEach((machineInterface) => {
       machineInterface.onEvents({
         switchOn: () => this.turnOn(),
         switchOff: () => this.turnOff(),
         coffeeSelected: (coffeeName) => this.makeCoffee(coffeeName),
+        filledContainer: (container) => {
+          this.ingredientsAvailable[container.containerName] = container.amountOf
+          this.emit('replenishmentOfIngredients',  this.ingredientsAvailable)
+        },
+        filledAllContainers: () => {
+          this.setState(ReadyCoffeeMachineState);
+        }
       });
 
       machineInterface.setupEvents(this);
     });
+
+    this.emit('init', this.ingredientsAvailable)
   }
 
   private searchTargetRecipe(coffeeName) {
@@ -80,7 +89,7 @@ export class CoffeeMachine extends Publisher {
   private getLowIngredients(): Partial<Ingredients> {
     const lowIngredients = {};
 
-    for (const ingredientName in Reflect.ownKeys(this.ingredientsAvailable)) {
+    for (const ingredientName of Reflect.ownKeys(this.ingredientsAvailable)) {
       const ingredientAmount = this.ingredientsAvailable[ingredientName];
 
       if (ingredientAmount <= 20) {
@@ -108,6 +117,7 @@ export class CoffeeMachine extends Publisher {
 
       if (milk || grain || water) {
         this.setState(InsufficientIngredientsCoffeeMachineState);
+        this.emit('noAnythingIngredient');
 
         if (milk) {
           this.emit('noMilk');
@@ -131,11 +141,12 @@ export class CoffeeMachine extends Publisher {
 
   private turnOn() {
     this.state.turnOn();
+    this.emit('on');
   }
 
   private turnOff() {
     this.state.turnOff();
-    this.emit('off')
+    this.emit('off');
   }
 
   async makeCoffee(coffeeName) {
