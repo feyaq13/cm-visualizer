@@ -51,23 +51,18 @@ export class CoffeeMachineGUI extends AbstractCoffeeMachineUI {
         this.startAnimation('error');
       },
       'noMilk': () => {
+        debugger
         console.log('кажется нет молока');
-        // this.stopAnimation('busy');
-        // this.startAnimation('error');
         this.showContainerStatus('milk');
         this.fillContainer('milk');
       },
       'noGrains': () => {
         console.log('нет зерен');
-        // this.stopAnimation('busy');
-        // this.startAnimation('error');
         this.showContainerStatus('grain');
         this.fillContainer('grain');
       },
       'noWater': () => {
         console.log('нет воды');
-        // this.stopAnimation('busy');
-        // this.startAnimation('error');
         this.showContainerStatus('water');
         this.fillContainer('water');
       },
@@ -104,17 +99,20 @@ export class CoffeeMachineGUI extends AbstractCoffeeMachineUI {
         this.showTypesCoffee(coffeeTypes);
         this.stopAnimation('busy');
         this.setupOnMakeCoffeeTypesOnEventClick();
+        // ???
         this.setupSwitchOffHandler();
+        // ???
         console.log('я готова делать кофе!');
       },
-      'on': () => {
+      'switchedOn': () => {
         this.coffeeMachineElement.classList.remove('off')
       },
-      'off': () => {
+      'switchedOff': () => {
         this.removeOnMakeCoffeeTypesOnEventClick();
         this.switchOnButton.setAttribute('aria-checked', 'false');
         this.coffeeMachineElement.classList.add('off');
         this.setupControlsHandlers();
+        debugger
         console.log('\n\n\n\n\n\n\n\n');
       },
       'checking': (cupIsFull) => {
@@ -130,8 +128,8 @@ export class CoffeeMachineGUI extends AbstractCoffeeMachineUI {
       },
       'welcome': (coffeeTypes) => this.greeting(coffeeTypes),
       'init': (ingredientsAvailable) => {
-        this.showIngredientsAvailable(ingredientsAvailable);
         this.renderIngredientsAvailable(ingredientsAvailable);
+        this.showIngredientsAvailable(ingredientsAvailable);
       }
     });
   }
@@ -153,19 +151,31 @@ export class CoffeeMachineGUI extends AbstractCoffeeMachineUI {
       this.ingredientContainers,
       (container => container.children[0].dataset.containerName === containerName)
     )
-    .addEventListener('click', () => {
-      let amountOf = +prompt('Сколько положить?', '100')
-      if (amountOf > 100 || amountOf === null) {
-        amountOf = 100;
-      }
+    .addEventListener('click', this.boundHandlerOnFullContainer(containerName), { once: true })
+  }
 
-      this.renderInfoContainer(containerName, amountOf)
+  boundHandlerOnFullContainer(containerName) {
+    return this.handlerOnFullContainer.bind(this, containerName)
+  }
 
-      this.showContainerStatus(containerName);
-      this.audioManager.play('fillingContainerSound');
-      console.log(`Пополнение в ${containerName}: ${amountOf}`)
-      this.emit('filledContainer', { containerName, amountOf })
-    })
+  countAmountOfIngredient() {
+    let amountOf = +prompt('Сколько положить?', '100')
+    if (amountOf > 100 || amountOf === null) {
+      amountOf = 100;
+    }
+
+    return amountOf
+  }
+
+  handlerOnFullContainer(containerName, e) {
+    let amountOf = this.countAmountOfIngredient()
+
+    this.renderInfoContainer(containerName, amountOf)
+    e.currentTarget.removeEventListener('click', this.boundHandlerOnFullContainer(containerName))
+
+    this.showContainerStatus(containerName);
+    this.audioManager.play('fillingContainerSound');
+    this.emit('filledContainer', { containerName, amountOf })
   }
 
   renderInfoContainer(containerName: string, amountOf: number) {
@@ -270,11 +280,6 @@ export class CoffeeMachineGUI extends AbstractCoffeeMachineUI {
     // в данном случае тоглить !!!! нецелесообразно !!!!
 
     targetContainer.classList.toggle('error-mode');
-  }
-
-  showIngredients(ingredientsAvailable) {
-    this.renderIngredientsAvailable(ingredientsAvailable);
-    this.showIngredientsAvailable(ingredientsAvailable);
   }
 
   greeting({coffeeTypes}) {

@@ -73,6 +73,7 @@ export class PourCoffeeCoffeeMachineState extends CoffeeMachineState {
 
 export class InsufficientIngredientsCoffeeMachineState extends CoffeeMachineState {
   onEnter() {
+    // навещивается два раза!
     this.coffeeMachine.emit('canOff');
   }
 

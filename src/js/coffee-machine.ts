@@ -62,6 +62,7 @@ export class CoffeeMachine extends Publisher {
         },
         filledAllContainers: () => {
           this.setState(ReadyCoffeeMachineState);
+          this.emit('ready', this.coffeeTypes);
         }
       });
 
@@ -141,12 +142,12 @@ export class CoffeeMachine extends Publisher {
 
   private turnOn() {
     this.state.turnOn();
-    this.emit('on');
+    this.emit('switchedOn');
   }
 
   private turnOff() {
     this.state.turnOff();
-    this.emit('off');
+    this.emit('switchedOff');
   }
 
   async makeCoffee(coffeeName) {
@@ -202,11 +203,7 @@ export class CoffeeMachine extends Publisher {
   private whipMilk(ms = 6000) {
     this.setState(WhipMilkCoffeeMachineState);
     return delay(ms).then(() => {
-      if (this.ingredientsAvailable.milk > 0) {
         this.emit('whipping');
-      } else {
-        this.emit('noMilk');
-      }
     });
   }
 }
